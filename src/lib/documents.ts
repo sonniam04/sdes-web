@@ -54,7 +54,12 @@ export function mergeRows(prev: DocumentRow[], incoming: DocumentRow[], opts: Me
     const cur = map.get(r.id);
     if (cur && opts.insertOnly) continue;
     if (cur && opts.ifUpdatedAt !== undefined && cur.updatedAt !== opts.ifUpdatedAt) continue;
-    if (cur && cur.updatedAt > r.updatedAt) continue;
+    if (cur && cur.updatedAt > r.updatedAt) {
+      // event มาถึงก่อนผลโหลด และเวลาของ event ช้ากว่า updatedAt ใน DB เล็กน้อย (ส่งหลัง commit)
+      // สถานะเท่ากัน = ข้อมูลเดียวกัน → รับรายละเอียด (ผู้ขาย ยอดรวม จำนวนจุดที่ต้องแก้) แต่คงเวลาที่ใหม่กว่า
+      if (cur.status === r.status) map.set(r.id, { ...cur, ...r, updatedAt: cur.updatedAt });
+      continue;
+    }
     map.set(r.id, { ...cur, ...r });
   }
   return [...map.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -123,6 +128,12 @@ export function useDocumentQueue(client: ApiClient) {
         void load(lastSync.current); // เอกสารที่ยังไม่อยู่ในคิว (อัปโหลดจากที่อื่น หรือ response อัปโหลดยังมาไม่ถึง)
         return prev;
       });
+      // อ่านเสร็จแล้ว: event มีแค่สถานะ — ดึงแถวนั้นใหม่เพื่อได้ผู้ขาย ยอดรวม และจำนวนจุดที่ต้องแก้
+      // ใช้เวลาก่อน event เล็กน้อย เพราะผลโหลดรอบก่อนอาจเลื่อนจุด resync ไปหลังเวลาที่เอกสารเปลี่ยน
+      if (e.status === "EXTRACTED") {
+        const before = new Date(new Date(e.at).getTime() - 5_000).toISOString();
+        void load(lastSync.current && lastSync.current < before ? lastSync.current : before);
+      }
     });
     return () => {
       socket.disconnect();
