@@ -28,9 +28,11 @@ body {
   outline-offset: 2px;
 }
 
-/* ตัวเลขข้อมูลทุกตัวใช้ความกว้างเท่ากัน */
-.num {
-  font-variant-numeric: tabular-nums lining-nums;
-  text-align: right;
-  white-space: nowrap;
+/* ตัวเลขข้อมูลทุกตัวใช้ความกว้างเท่ากัน — อยู่ใน layer components เพื่อให้ utility อย่าง text-left แทนที่ได้ */
+@layer components {
+  .num {
+    font-variant-numeric: tabular-nums lining-nums;
+    text-align: right;
+    white-space: nowrap;
+  }
 }

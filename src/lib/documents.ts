@@ -35,6 +35,37 @@ export const QUEUE_TABS: { key: string; label: string; statuses: DocumentStatus[
 
 const WS_URL = process.env.NEXT_PUBLIC_SDES_WS_URL ?? "http://127.0.0.1:3000";
 
+export type MergeOptions = {
+  /** เพิ่มเฉพาะแถวที่ยังไม่มี — ใช้กับผลอัปโหลด ซึ่งอาจมาถึงหลัง event real-time ของเอกสารเดียวกัน */
+  insertOnly?: boolean;
+  /** แทนที่เฉพาะเมื่อแถวยังมี updatedAt เท่ากับค่านี้ — ใช้กับการอัปเดตล่วงหน้าหลังสั่งงาน */
+  ifUpdatedAt?: string;
+};
+
+/**
+ * รวมแถวใหม่เข้ากับคิวเดิม โดยไม่ย้อนสถานะกลับไปเป็นค่าที่เก่ากว่า
+ * (ผลโหลดหลายรอบอาจกลับมาไม่ตรงลำดับ — updatedAt และ event.at เป็นเวลาของ server ทั้งคู่)
+ */
+export function mergeRows(prev: DocumentRow[], incoming: DocumentRow[], opts: MergeOptions = {}): DocumentRow[] {
+  const map = new Map(prev.map((r) => [r.id, r]));
+  for (const r of incoming) {
+    const cur = map.get(r.id);
+    if (cur && opts.insertOnly) continue;
+    if (cur && opts.ifUpdatedAt !== undefined && cur.updatedAt !== opts.ifUpdatedAt) continue;
+    if (cur && cur.updatedAt > r.updatedAt) continue;
+    map.set(r.id, { ...cur, ...r });
+  }
+  return [...map.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+/** ใช้ event สถานะกับคิว — คืน null เมื่อยังไม่มีเอกสารนี้ (ต้องโหลดรายละเอียดจาก server) */
+export function applyStatusEvent(prev: DocumentRow[], e: StatusEvent): DocumentRow[] | null {
+  const cur = prev.find((r) => r.id === e.id);
+  if (!cur) return null;
+  if (cur.updatedAt > e.at) return prev;
+  return prev.map((r) => (r.id === e.id ? { ...r, status: e.status, updatedAt: e.at } : r));
+}
+
 /**
  * โหลดคิวเอกสาร + ฟังการเปลี่ยนสถานะแบบ real-time
  * เมื่อการเชื่อมต่อหลุดแล้วกลับมา จะดึงเอกสารที่เปลี่ยนตั้งแต่ครั้งล่าสุดมา resync
@@ -45,12 +76,8 @@ export function useDocumentQueue(client: ApiClient) {
   const [live, setLive] = useState<"connecting" | "live" | "offline">("connecting");
   const lastSync = useRef<string | null>(null);
 
-  const merge = useCallback((incoming: DocumentRow[]) => {
-    setRows((prev) => {
-      const map = new Map((prev ?? []).map((r) => [r.id, r]));
-      for (const r of incoming) map.set(r.id, { ...map.get(r.id), ...r });
-      return [...map.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    });
+  const merge = useCallback((incoming: DocumentRow[], opts?: MergeOptions) => {
+    setRows((prev) => mergeRows(prev ?? [], incoming, opts));
   }, []);
 
   const load = useCallback(
@@ -58,7 +85,8 @@ export function useDocumentQueue(client: ApiClient) {
       try {
         const q = since ? `?updatedSince=${encodeURIComponent(since)}` : "";
         const r = await client.request<{ items: DocumentRow[]; serverTime: string }>(`/documents${q}`);
-        lastSync.current = r.serverTime;
+        // ผลที่กลับมาไม่ตรงลำดับต้องไม่ทำให้จุด resync ถอยหลัง
+        if (!lastSync.current || r.serverTime > lastSync.current) lastSync.current = r.serverTime;
         if (since) merge(r.items);
         else setRows(r.items);
         setError(undefined);
@@ -88,12 +116,10 @@ export function useDocumentQueue(client: ApiClient) {
     socket.on("document.status", (e: StatusEvent) => {
       setRows((prev) => {
         if (!prev) return prev;
-        const found = prev.some((r) => r.id === e.id);
-        if (!found) {
-          void load(lastSync.current); // เอกสารใหม่จากผู้ใช้อื่น
-          return prev;
-        }
-        return prev.map((r) => (r.id === e.id ? { ...r, status: e.status, updatedAt: e.at } : r));
+        const next = applyStatusEvent(prev, e);
+        if (next) return next;
+        void load(lastSync.current); // เอกสารที่ยังไม่อยู่ในคิว (อัปโหลดจากที่อื่น หรือ response อัปโหลดยังมาไม่ถึง)
+        return prev;
       });
     });
     return () => {

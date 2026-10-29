@@ -14,6 +14,7 @@ import { QUEUE_TABS, useDocumentQueue, type UploadApiResult } from "@/lib/docume
 import { formatMoney, formatThaiDate } from "@/lib/format";
 
 const CAN_UPLOAD = ["AP_CLERK", "AP_LEAD"] as const;
+const EPOCH = new Date(0).toISOString();
 
 export default function DocumentsPage() {
   return (
@@ -75,8 +76,10 @@ function Documents() {
             invoiceDate: null,
             grandTotal: null,
             createdAt: now,
-            updatedAt: now,
+            // ยังไม่รู้เวลาของ server — ให้ข้อมูลจาก server (event หรือผลโหลด) แทนที่ได้เสมอ
+            updatedAt: EPOCH,
           })),
+          { insertOnly: true },
         );
         setTab("progress");
       }
@@ -89,9 +92,11 @@ function Documents() {
 
   async function retry(id: string, docNo: string) {
     setRetrying(id);
+    const row = (rows ?? []).find((r) => r.id === id)!;
     try {
       await client.request(`/documents/${id}/retry`, { method: "POST" });
-      merge([{ ...(rows ?? []).find((r) => r.id === id)!, status: "PROCESSING", updatedAt: new Date().toISOString() }]);
+      // คง updatedAt เดิมไว้ เพื่อให้ event ถัดไปจาก server แทนที่ได้แม้นาฬิกาเครื่องไม่ตรง
+      merge([{ ...row, status: "PROCESSING" }], { ifUpdatedAt: row.updatedAt });
       toast(`ส่ง ${docNo} ไปอ่านใหม่แล้ว`, "success");
     } catch (e) {
       toast(e instanceof ApiError ? e.message : "สั่งอ่านใหม่ไม่สำเร็จ", "error");
