@@ -1,0 +1,64 @@
+/* SDES wireframe — โลกแบบฟอร์มภาษี (ข้อมูลทั้งหมดเป็นตัวอย่าง) */
+:root {
+  --ink: #1B2B4B;
+  --ink-2: #33456B;
+  --ink-soft: #5A6A88;
+  --rule: #B8C6DD;
+  --rule-soft: #DCE3EE;
+  --form: #E8EEF7;
+  --paper: #FFFFFF;
+  --stamp: #B42318;
+  --stamp-bg: #FCECEA;
+  --wait: #8A5A00;
+  --wait-bg: #FFF4DB;
+  --run: #145A73;
+  --run-bg: #E0F0F5;
+  --ok: #1E6B45;
+  --ok-bg: #E2F2E8;
+  --end: #4B5568;
+  --end-bg: #ECEEF2;
+  --focus: #2F6FED;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+html { scrollbar-color: #9AA9C3 transparent; }
+body {
+  font-family: "Sarabun", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--form);
+}
+::selection { background: #C9D7F0; color: var(--ink); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.ico { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* แถบบน */
+.top { height: 48px; background: var(--ink); color: #fff; display: flex; align-items: center; padding: 0 20px; gap: 4px; }
+.top .brand { font-weight: 700; font-size: 17px; letter-spacing: .06em; margin-right: 20px; }
+.top a { color: #B9C6DE; text-decoration: none; padding: 0 12px; height: 48px; display: flex; align-items: center; gap: 6px; }
+.top a.on { color: #fff; box-shadow: inset 0 -3px 0 #fff; }
+.top a .count { font-size: 12px; background: #33456B; color: #fff; border-radius: 3px; padding: 0 6px; }
+.top .user { margin-left: auto; color: #B9C6DE; font-size: 13px; }
+
+/* ปุ่ม */
+.btn { text-decoration: none; font: inherit; font-weight: 600; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 2px; }
+.btn:hover { background: var(--form); }
+.btn.primary { background: var(--ink); color: #fff; }
+.btn.primary:hover { background: var(--ink-2); }
+.btn.danger { border-color: var(--stamp); color: var(--stamp); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.kbd { font-size: 11px; font-weight: 500; border: 1px solid currentColor; border-radius: 2px; padding: 0 4px; opacity: .7; }
+
+/* ป้ายสถานะ */
+.st { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 1px 8px 1px 6px; border: 1px solid currentColor; border-radius: 2px; white-space: nowrap; }
+.st.wait { color: var(--wait); background: var(--wait-bg); }
+.st.run { color: var(--run); background: var(--run-bg); }
+.st.ok { color: var(--ok); background: var(--ok-bg); }
+.st.bad { color: var(--stamp); background: var(--stamp-bg); }
+.st.end { color: var(--end); background: var(--end-bg); }
+.st .ico { width: 13px; height: 13px; }
+
+.note { font-size: 12px; color: var(--ink-soft); }
+.synthetic { font-size: 12px; color: var(--ink-soft); padding: 8px 20px; }

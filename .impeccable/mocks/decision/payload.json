@@ -1,0 +1,232 @@
+{
+ "title": "เลือกโทนภาพของ SDES",
+ "question": "ทิศทางที่ได้จากการสุ่มคือ “แฟ้มสันและป้ายดัชนี” เลือกใช้, เลือกทางเลือกอื่น, หรือสุ่มใหม่",
+ "options": [
+  {
+   "id": "assigned",
+   "kind": "assigned",
+   "label": "แฟ้มสันและป้ายดัชนี",
+   "kicker": "THE ROLL",
+   "lineage": "แฟ้มสันกว้างกับแผ่นคั่นดัชนีสีในห้องบัญชีไทย",
+   "thesis": "ทุกเอกสารมีป้ายดัชนีสีที่ขอบหน้า บอกสถานะได้ตั้งแต่มองแวบเดียว เหมือนแฟ้มที่เรียงอยู่บนชั้น",
+   "palette": [
+    "#1F3A68",
+    "#EEF1F4",
+    "#FFFFFF",
+    "#C98A12",
+    "#2E7D4F",
+    "#B3261E"
+   ],
+   "materials": [
+    "กระดาษแข็งแฟ้ม",
+    "แผ่นคั่นดัชนีสี"
+   ],
+   "viewport": "แถบเมนูน้ำเงินแฟ้มทางซ้าย คิวเอกสารเป็นแถวที่มีป้ายดัชนีสีตามสถานะที่ขอบซ้าย ด้านบนมีตัวคั่นกลุ่ม “รอตรวจ / รออนุมัติ / ล้มเหลว” พร้อมจำนวน",
+   "risk": "ถ้าสีป้ายมากเกินจะดูเป็นสายรุ้ง ต้องคุมให้มี 5 กลุ่มความหมายเท่านั้น",
+   "raised": [
+    {
+     "from": "challenger-datamatics",
+     "raise": "ตัวเลขทุกตัวตั้งเป็นคอลัมน์ tabular ชิดขวา ที่ความหนาแน่นระดับข้อมูล"
+    },
+    {
+     "from": "challenger-catalog",
+     "raise": "ทุกแถวเอกสารมีข้อมูลประจำตำแหน่งตายตัว: ผู้ขาย เลขที่ วันที่ ยอด และเหตุผลบรรทัดเดียว"
+    },
+    {
+     "from": "challenger-consumer",
+     "raise": "สีน้ำเงินแฟ้มสงวนไว้ให้สิ่งที่กดได้เท่านั้น"
+    },
+    {
+     "from": "challenger-jcard",
+     "raise": "ยอดชั้นที่ 1 เป็นข้อบังคับ: ผลรวมรายการเทียบ Subtotal แสดงเป็นแถบที่ต้องลงพอดี"
+    },
+    {
+     "from": "challenger-folio",
+     "raise": "PDF กับฟอร์มลงตำแหน่งกันพอดี กรอบ bbox อยู่ที่เดิมทุกระดับซูม"
+    }
+   ],
+   "html": ".impeccable/mocks/decision/assigned.html"
+  },
+  {
+   "id": "model-pick",
+   "kind": "pick",
+   "label": "แบบฟอร์มกรมสรรพากร",
+   "kicker": "IMPECCABLE’S PICK",
+   "lineage": "แบบ ภ.พ.30 / ภ.ง.ด.53 ที่มีช่องตัวเลขทีละหลัก",
+   "thesis": "Tax ID และยอดเงินอยู่ในช่องตีกรอบทีละหลักแบบแบบฟอร์มภาษี อ่านผิดหลักได้ยาก",
+   "palette": [
+    "#1B2B4B",
+    "#FFFFFF",
+    "#E8EEF7",
+    "#B42318"
+   ],
+   "materials": [
+    "กระดาษแบบฟอร์ม",
+    "หมึกพิมพ์น้ำเงินดำ"
+   ],
+   "viewport": "แถบบนน้ำเงินดำ ฟอร์มตรวจข้อมูลเป็นกล่องตามหมวดของแบบฟอร์มภาษี ตัวเลข Tax ID แสดงในช่องทีละหลัก",
+   "risk": "คุ้นตาที่สุด และถ้าตีกรอบทุก field จะแน่นจนอ่านยาก",
+   "html": ".impeccable/mocks/decision/model-pick.html"
+  },
+  {
+   "id": "challenger-orienteering",
+   "kind": "challenger",
+   "catalogId": "notation-diagram-systems-orienteering-map",
+   "label": "แผนที่และเส้นทางตรวจ",
+   "verdict": "competitive",
+   "lineage": "แผนที่ orienteering: ภูมิประเทศคงที่ เส้นทางสีม่วงทับด้านบน",
+   "thesis": "เอกสารคือภูมิประเทศที่ไม่ถูกแก้ ส่วนสิ่งที่ AI อ่านได้คือเส้นทางสีม่วงทับด้านบน ตรวจทีละจุด เจอแล้วติ๊กออก",
+   "palette": [
+    "#FAFAF7",
+    "#4A4F57",
+    "#8E2C9A",
+    "#2E7D4F"
+   ],
+   "materials": [
+    "เส้นทับโปร่งใส",
+    "วงกลมจุดตรวจ"
+   ],
+   "viewport": "PDF ซ้ายมีวงกลมม่วงตามลำดับ field ที่ต้องตรวจ ฟอร์มขวาเป็นรายการจุดตรวจที่ติ๊กออกเมื่อยืนยัน",
+   "case": "ความหมายชัดมากสำหรับงานตรวจทานบน PDF แต่คนบัญชีไม่ได้คุ้นกับโลกนี้",
+   "risk": "เส้นม่วงที่ลากข้ามหน้าอาจรกเมื่อมี line items มาก",
+   "html": ".impeccable/mocks/decision/challenger-orienteering.html"
+  },
+  {
+   "id": "challenger-datamatics",
+   "kind": "challenger",
+   "catalogId": "ikeda-datamatics",
+   "label": "Datamatics ขาวดำ",
+   "verdict": "declined",
+   "lineage": "สนามข้อมูลบาร์โค้ดขาวดำ",
+   "thesis": "ข้อมูลทั้งหมดเป็นคอลัมน์ตัวเลขขาวดำล้วน",
+   "palette": [
+    "#000000",
+    "#FFFFFF"
+   ],
+   "materials": [
+    "เส้นบาง",
+    "ตัวเลข monospace"
+   ],
+   "viewport": "คอลัมน์ตัวเลขเต็มจอ",
+   "case": "ไม่มีสีสถานะ ทำให้แยกเคสเสี่ยงไม่ได้ และผู้ใช้ไม่ผูกพันกับโลกนี้",
+   "risk": "สถานะแยกด้วยสีไม่ได้เลย",
+   "kept": "ความหนาแน่นของตัวเลขแบบ tabular"
+  },
+  {
+   "id": "challenger-catalog",
+   "kind": "challenger",
+   "catalogId": "pop-culture-shelf-character-goods-catalog",
+   "label": "แคตตาล็อกตัวการ์ตูน",
+   "verdict": "declined",
+   "lineage": "แคตตาล็อกสินค้าตัวการ์ตูนพาสเทล",
+   "thesis": "เอกสารเป็นการ์ดพาสเทลจัดอันดับ",
+   "palette": [
+    "#F7D6E0",
+    "#D6EAF8",
+    "#FFFFFF"
+   ],
+   "materials": [
+    "พาสเทล",
+    "ขอบขาว"
+   ],
+   "viewport": "กริดการ์ด",
+   "case": "น้ำเสียงไม่เข้ากับงานการเงิน และการ์ดกินพื้นที่จอ notebook",
+   "risk": "ดูไม่น่าเชื่อถือสำหรับงานการเงิน",
+   "kept": "ข้อมูลประจำตำแหน่งตายตัวของทุกรายการ"
+  },
+  {
+   "id": "challenger-consumer",
+   "kind": "challenger",
+   "catalogId": "digital-design-canon-warm-consumer-app-surface",
+   "label": "แอปผู้บริโภคโทนอุ่น",
+   "verdict": "declined",
+   "lineage": "แอปมือถือการ์ดมุมมน",
+   "thesis": "การ์ดมุมมนบนพื้นโทนอุ่น มีสีเดียวสำหรับการกระทำ",
+   "palette": [
+    "#FBF4EC",
+    "#FFFFFF",
+    "#E2582B"
+   ],
+   "materials": [
+    "การ์ดมุมมน",
+    "แถบล่าง"
+   ],
+   "viewport": "การ์ดเรียงคอลัมน์เดียว",
+   "case": "ระยะห่างแบบมือถือขัดกับงานแน่นบน notebook",
+   "risk": "เลื่อนจอมากเกินสำหรับงานต่อเนื่อง",
+   "kept": "สีของการกระทำสงวนไว้ให้สิ่งที่กดได้เท่านั้น"
+  },
+  {
+   "id": "challenger-jcard",
+   "kind": "challenger",
+   "catalogId": "vernacular-ephemera-cassette-j-card",
+   "label": "ปกเทปคาสเซ็ต",
+   "verdict": "declined",
+   "lineage": "ปกเทปเขียนมือ หน้า A / หน้า B",
+   "thesis": "รายการเขียนมือ เวลาชิดขวา ห้ามล้นเทป",
+   "palette": [
+    "#1E3A8A",
+    "#FFFFFF",
+    "#C8102E"
+   ],
+   "materials": [
+    "ปากกาลูกลื่น",
+    "กระดาษเส้น"
+   ],
+   "viewport": "แผ่นพับรายการเพลง",
+   "case": "ลายมือขัดกับความแม่นยำของตัวเลข",
+   "risk": "อ่านตัวเลขยาก",
+   "kept": "ยอดรวมต้องลงพอดีเหมือนเวลาที่ห้ามล้นเทป"
+  },
+  {
+   "id": "challenger-folio",
+   "kind": "challenger",
+   "catalogId": "editorial-sequence-montage-botanical-folio-season",
+   "label": "สมุดภาพพฤกษศาสตร์",
+   "verdict": "declined",
+   "lineage": "แผ่นภาพพืชตามฤดูที่สเกลเดียวกัน",
+   "thesis": "ทุกแผ่นสเกลและตำแหน่งเดียวกัน เทียบกันได้ตรง",
+   "palette": [
+    "#F4EEDC",
+    "#4F6B3A",
+    "#B0302A"
+   ],
+   "materials": [
+    "กระดาษครีม",
+    "เส้น sepia"
+   ],
+   "viewport": "แผ่นภาพเรียงห้าแผ่น",
+   "case": "ห่างจากโลกของผู้ใช้ และพื้นครีมคือค่า default ที่ต้องเลี่ยง",
+   "risk": "ดูเป็นหนังสือมากกว่าเครื่องมือทำงาน",
+   "kept": "การลงตำแหน่งให้ตรงกันเพื่อเทียบได้ทันที"
+  }
+ ],
+ "reroll": {
+  "registers": [
+   "safer",
+   "bolder"
+  ]
+ },
+ "buildPath": {
+  "value": "code"
+ },
+ "canon": true,
+ "canonCard": {
+  "kind": "canon",
+  "label": "มาตรฐานของหมวดนี้",
+  "thesis": "หน้าตาแบบเครื่องมือ AP automation ทั่วไป ทำให้ประณีตที่สุด",
+  "palette": [
+   "#FFFFFF",
+   "#111827",
+   "#2563EB"
+  ],
+  "materials": [
+   "กริดสะอาด",
+   "การ์ดขาว"
+  ],
+  "viewport": "แถบเมนูซ้าย ตารางคิว และ split-view แบบที่ผู้ใช้คาดไว้",
+  "risk": "แยกไม่ออกจากเครื่องมืออื่นในตลาด",
+  "html": ".impeccable/mocks/decision/canon.html"
+ },
+ "steer": true
+}

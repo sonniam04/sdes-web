@@ -1,0 +1,106 @@
+/*
+ * SDES design tokens — โลก "แบบฟอร์มกรมสรรพากร"
+ * ชั้น 1 primitive: สเกลสีดิบ ห้าม component อ้างตรง
+ * ชั้น 2 semantic: ความหมายของสี component ใช้เฉพาะชั้นนี้
+ * เปลี่ยนแบรนด์ภายหลัง = แก้ primitive และ mapping ในไฟล์นี้เท่านั้น
+ */
+:root {
+  /* ---------- primitive ---------- */
+  --ink-900: #1b2b4b; /* น้ำเงินหมึกพิมพ์ */
+  --ink-700: #33456b;
+  --ink-500: #5a6a88;
+  --ink-300: #b8c6dd;
+  --ink-200: #dce3ee;
+  --ink-150: #cbd5e3;
+  --ink-100: #e8eef7; /* ฟ้าแบบฟอร์ม */
+  --ink-50: #f4f7fb;
+  --paper: #ffffff;
+  --ink-on-dark: #b9c6de;
+
+  --stamp-700: #b42318; /* แดงตรายาง */
+  --stamp-50: #fcecea;
+  --amber-800: #8a5a00;
+  --amber-50: #fff4db;
+  --teal-800: #145a73;
+  --teal-50: #e0f0f5;
+  --green-800: #1e6b45;
+  --green-50: #e2f2e8;
+  --slate-700: #4b5568;
+  --slate-50: #eceef2;
+  --blue-600: #2f6fed;
+
+}
+
+/* semantic — ประกาศใน @theme ให้ Tailwind สร้าง utility (bg-surface, text-risk ฯลฯ) และ CSS variable บน :root */
+@theme static {
+  /* ---------- semantic: พื้นและเส้น ---------- */
+  --color-canvas: var(--ink-100);
+  --color-surface: var(--paper);
+  --color-surface-sunken: var(--ink-50);
+  --color-document-canvas: var(--ink-150);
+  --color-rule-strong: var(--ink-900);
+  --color-rule: var(--ink-300);
+  --color-rule-soft: var(--ink-200);
+
+  /* ---------- semantic: ข้อความ ---------- */
+  --color-text: var(--ink-900);
+  --color-text-muted: var(--ink-500);
+  --color-text-on-shell: var(--paper);
+  --color-text-on-shell-muted: var(--ink-on-dark);
+
+  /* ---------- semantic: shell และการกระทำ ---------- */
+  --color-shell: var(--ink-900);
+  --color-shell-raised: var(--ink-700);
+  --color-action: var(--ink-900);
+  --color-action-hover: var(--ink-700);
+  --color-action-text: var(--paper);
+  --color-focus: var(--blue-600);
+  --color-selection: #c9d7f0;
+
+  /* ---------- semantic: ความเสี่ยง (แดงตรายาง สงวนไว้ให้ความเสี่ยงเท่านั้น) ---------- */
+  --color-risk: var(--stamp-700);
+  --color-risk-bg: var(--stamp-50);
+
+  /* ---------- semantic: กลุ่มสถานะเอกสาร 5 กลุ่ม ---------- */
+  --color-status-progress: var(--teal-800); /* UPLOADED PROCESSING SYNCING */
+  --color-status-progress-bg: var(--teal-50);
+  --color-status-waiting: var(--amber-800); /* EXTRACTED VERIFIED PENDING_APPROVAL */
+  --color-status-waiting-bg: var(--amber-50);
+  --color-status-success: var(--green-800); /* APPROVED SYNCED */
+  --color-status-success-bg: var(--green-50);
+  --color-status-failed: var(--stamp-700); /* FAILED SYNC_FAILED */
+  --color-status-failed-bg: var(--stamp-50);
+  --color-status-ended: var(--slate-700); /* REJECTED */
+  --color-status-ended-bg: var(--slate-50);
+
+  /* ---------- typography ---------- */
+  --text-label: 12px;
+  --text-small: 13px;
+  --text-body: 14px;
+  --text-title: 16px;
+  --text-heading: 20px;
+
+  /* ---------- shape / motion ---------- */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root {
+  --line-height-thai: 1.6;
+
+  /* ---------- spacing / shape / density ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --rule-width: 1px;
+  --rule-width-strong: 1.5px;
+  --row-height: 38px;
+  --shell-height: 48px;
+
+  --duration-fast: 180ms;
+}
