@@ -33,7 +33,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {loading ? <Loader aria-hidden className="size-4 animate-spin" /> : icon}
       {children}
       {shortcut && (
-        <kbd className="rounded-sm border border-current px-1 text-[11px] font-medium opacity-70">{shortcut}</kbd>
+        <kbd className="rounded-sm border border-current px-1 text-label leading-tight font-medium opacity-80">{shortcut}</kbd>
       )}
     </button>
   );

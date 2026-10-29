@@ -23,7 +23,7 @@ export function AppShell({
   return (
     <div className={`flex flex-col ${fullHeight ? "min-h-screen" : ""}`}>
       <nav aria-label="เมนูหลัก" className="flex h-12 items-center gap-1 bg-shell px-5 text-text-on-shell">
-        <span className="mr-5 text-[17px] font-bold tracking-[0.06em]">{th.app.name}</span>
+        <span className="mr-5 text-title font-bold tracking-[0.06em]">{th.app.name}</span>
         {items.map((m) => {
           const active = currentPath === m.href || currentPath.startsWith(`${m.href}/`);
           return (
@@ -42,7 +42,7 @@ export function AppShell({
             </a>
           );
         })}
-        <span className="ml-auto text-small text-text-on-shell-muted">
+        <span className="ml-auto hidden truncate text-small text-text-on-shell-muted md:inline">
           {userName} · {roles.map((r) => ROLE_LABEL[r]).join(", ")}
         </span>
       </nav>

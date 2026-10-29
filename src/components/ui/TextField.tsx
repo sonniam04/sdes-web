@@ -43,7 +43,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
         id={inputId}
         aria-invalid={error ? true : undefined}
         aria-describedby={error || hint ? hintId : undefined}
-        className={`w-full rounded-sm border bg-surface px-2 py-[3px] text-text outline-none focus:outline-2 focus:outline-focus disabled:bg-surface-sunken disabled:text-text-muted ${ring}`}
+        className={`w-full rounded-sm border bg-surface px-2 py-[3px] text-text outline-none placeholder:text-text-muted focus:outline-2 focus:outline-focus disabled:bg-surface-sunken disabled:text-text-muted ${ring}`}
         {...rest}
       />
       {(error || hint) && (
