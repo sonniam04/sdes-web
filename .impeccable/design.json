@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T11:00:00+07:00",
+  "title": "Design System: SDES",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "primary", "displayName": "น้ำเงินหมึกพิมพ์", "canonical": "#1b2b4b", "tonalRamp": ["#0f1a30", "#1b2b4b", "#33456b", "#5a6a88", "#b8c6dd", "#cbd5e3", "#dce3ee", "#e8eef7"] },
+      "stamp-red": { "role": "secondary", "displayName": "แดงตรายาง", "canonical": "#b42318", "tonalRamp": ["#5e120c", "#8a1a12", "#b42318", "#d04a3f", "#e88a82", "#f4c1bc", "#fcecea", "#fff7f6"] },
+      "form-blue": { "role": "neutral", "displayName": "ฟ้าแบบฟอร์ม", "canonical": "#e8eef7" },
+      "paper": { "role": "neutral", "displayName": "กระดาษ", "canonical": "#ffffff" }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "ชื่อหน้า" },
+      "amount": { "displayName": "Amount", "purpose": "ยอดเงินทุกตัว ชิดขวา tabular" }
+    },
+    "shadows": [
+      { "name": "document-page", "value": "0 2px 8px rgba(27,43,75,.18)", "purpose": "หน้าเอกสาร PDF บนพื้นโต๊ะเอกสารเท่านั้น" }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.2, 0.8, 0.2, 1)", "purpose": "กรอบ bbox เลื่อนตาม field และ toast" },
+      { "name": "duration-fast", "value": "180ms", "purpose": "การเปลี่ยน state ทั่วไป" }
+    ],
+    "breakpoints": [
+      { "name": "status-only", "value": "768px" },
+      { "name": "split-view", "value": "1280px" },
+      { "name": "notebook", "value": "1366px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "การกระทำหลักของหน้า เช่น ยืนยันและไปใบถัดไป",
+      "html": "<button class=\"ds-btn-primary\">ยืนยันและไปใบถัดไป <span class=\"ds-kbd\">Ctrl+Enter</span></button>",
+      "css": ".ds-btn-primary{font-family:Sarabun,system-ui,sans-serif;font-size:14px;font-weight:600;background:var(--color-action,#1b2b4b);color:#fff;border:1.5px solid #1b2b4b;border-radius:2px;padding:6px 14px;display:inline-flex;gap:6px;align-items:center;cursor:pointer}.ds-btn-primary:hover{background:#33456b}.ds-btn-primary:focus-visible{outline:2px solid #2f6fed;outline-offset:2px}.ds-kbd{font-size:11px;font-weight:500;border:1px solid currentColor;border-radius:2px;padding:0 4px;opacity:.7}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "การกระทำรอง เช่น บันทึกร่าง",
+      "html": "<button class=\"ds-btn-secondary\">บันทึกร่าง</button>",
+      "css": ".ds-btn-secondary{font-family:Sarabun,system-ui,sans-serif;font-size:14px;font-weight:600;background:#fff;color:#1b2b4b;border:1.5px solid #1b2b4b;border-radius:2px;padding:6px 14px;cursor:pointer}.ds-btn-secondary:hover{background:#e8eef7}.ds-btn-secondary:focus-visible{outline:2px solid #2f6fed;outline-offset:2px}"
+    },
+    {
+      "name": "Status Tag",
+      "kind": "chip",
+      "description": "ป้ายสถานะเอกสาร ข้อความไทย + ไอคอน + สีกลุ่ม",
+      "html": "<span class=\"ds-st ds-st-wait\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z\"/></svg>รอตรวจ</span> <span class=\"ds-st ds-st-bad\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"/><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"/></svg>อ่านไม่สำเร็จ</span>",
+      "css": ".ds-st{font-family:Sarabun,system-ui,sans-serif;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:1px 8px 1px 6px;border:1px solid currentColor;border-radius:2px}.ds-st-wait{color:#8a5a00;background:#fff4db}.ds-st-bad{color:#b42318;background:#fcecea}"
+    },
+    {
+      "name": "Form Section",
+      "kind": "custom",
+      "refersTo": "section-number",
+      "description": "หมวดของฟอร์มที่มีเลขกำกับกลับสี",
+      "html": "<div class=\"ds-sec\"><h3><span class=\"ds-no\">1</span>ผู้ขาย<span class=\"ds-note\">อยู่ในทะเบียนผู้ขาย</span></h3><div class=\"ds-body\">…</div></div>",
+      "css": ".ds-sec{font-family:Sarabun,system-ui,sans-serif;border:1.5px solid #1b2b4b;background:#fff;width:360px}.ds-sec h3{display:flex;align-items:center;gap:8px;margin:0;font-size:13px;font-weight:700;color:#1b2b4b;background:#f4f7fb;border-bottom:1px solid #1b2b4b;padding:3px 10px 3px 0}.ds-no{background:#1b2b4b;color:#fff;padding:3px 9px;align-self:stretch;display:flex;align-items:center}.ds-note{margin-left:auto;font-weight:400;font-size:12px;color:#1e6b45}.ds-body{padding:8px 10px;color:#5a6a88}"
+    },
+    {
+      "name": "Tax ID Cells",
+      "kind": "input",
+      "description": "เลขประจำตัวผู้เสียภาษี 13 ช่อง กลุ่ม 1-4-5-2-1",
+      "html": "<div class=\"ds-cells\"><i>0</i><b></b><i>1</i><i>0</i><i>5</i><i>5</i><b></b><i>6</i><i>9</i><i>0</i><i>1</i><i>2</i><b></b><i>3</i><i>4</i><b></b><i>5</i></div>",
+      "css": ".ds-cells{display:flex;font-family:Sarabun,system-ui,sans-serif}.ds-cells i{font-style:normal;width:24px;height:30px;border:1px solid #1b2b4b;margin-left:-1px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#1b2b4b;background:#fff}.ds-cells b{width:10px}"
+    },
+    {
+      "name": "Amount Leader Row",
+      "kind": "custom",
+      "description": "แถวยอดเงินที่มีเส้นประนำสายตา",
+      "html": "<div class=\"ds-lead\"><span>ภาษีมูลค่าเพิ่ม 7%</span><span class=\"ds-dots\"></span><span class=\"ds-v\">3,150.00</span></div>",
+      "css": ".ds-lead{font-family:Sarabun,system-ui,sans-serif;display:flex;align-items:flex-end;gap:6px;width:360px;color:#1b2b4b;font-size:14px}.ds-dots{flex:1;border-bottom:1.5px dotted #b8c6dd;margin-bottom:7px}.ds-v{font-variant-numeric:tabular-nums;font-weight:600}"
+    },
+    {
+      "name": "Top Navigation",
+      "kind": "nav",
+      "refersTo": "shell-bar",
+      "description": "แถบบนพื้นน้ำเงินหมึก",
+      "html": "<nav class=\"ds-top\"><b>SDES</b><a class=\"on\">คิวเอกสาร</a><a>รออนุมัติ <span>9</span></a><a>รายงาน</a></nav>",
+      "css": ".ds-top{font-family:Sarabun,system-ui,sans-serif;height:48px;background:#1b2b4b;color:#fff;display:flex;align-items:center;padding:0 20px;gap:4px}.ds-top b{letter-spacing:.06em;margin-right:20px}.ds-top a{color:#b9c6de;padding:0 12px;height:48px;display:flex;align-items:center;gap:6px;cursor:pointer}.ds-top a:hover{color:#fff}.ds-top a.on{color:#fff;box-shadow:inset 0 -3px 0 #fff}.ds-top span{font-size:12px;background:#33456b;border-radius:3px;padding:0 6px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "แบบฟอร์มภาษีที่ทำงานได้ (The Working Tax Form)",
+    "overview": "หน้าจอทำงานของฝ่ายบัญชีในโลกของแบบฟอร์มภาษีไทย ข้อมูลแบ่งเป็นหมวดมีเลข ตัวเลขอยู่ตำแหน่งตายตัว แดงตรายางสงวนไว้ให้ความเสี่ยง ความหนาแน่นสูงสำหรับ notebook จอเดียว",
+    "keyCharacteristics": ["หมวดมีเลขกำกับกลับสี", "Tax ID ช่องทีละหลัก", "แถวยอดเงินเส้นประนำสายตา", "มุมเกือบฉาก ไม่มีเงา", "ตัวเลข tabular ทุกตัว"],
+    "rules": [
+      { "name": "The Stamp Rule", "body": "แดงตรายางใช้กับความเสี่ยงและความล้มเหลวเท่านั้น", "section": "colors" },
+      { "name": "The Ink Means Action Rule", "body": "พื้นทึบน้ำเงินหมึกในพื้นที่ทำงานหมายถึงสิ่งที่กดได้", "section": "colors" },
+      { "name": "The Never Color Alone Rule", "body": "ทุกสถานะมีข้อความไทยและไอคอนคู่กับสี", "section": "colors" },
+      { "name": "The Line Height Floor Rule", "body": "line-height ข้อความไทยไม่ต่ำกว่า 1.6", "section": "typography" },
+      { "name": "The Tabular Rule", "body": "ตัวเลขข้อมูลทุกตัวใช้ tabular-nums", "section": "typography" },
+      { "name": "The Paper Rule", "body": "พื้นที่ทำงานไม่มีเงา แยกด้วยเส้นและโทนพื้น", "section": "elevation" }
+    ],
+    "dos": ["Do ใช้หมวดมีเลขกำกับเมื่อฟอร์มมีหลายกลุ่มข้อมูล", "Do ยอดเงินชิดขวา tabular ทศนิยม 2 ตำแหน่ง", "Do บอกขั้นต่อไปเสมอ", "Do ระบุว่าเป็นข้อมูลตัวอย่างใน mockup"],
+    "donts": ["Don't ใช้ตราครุฑหรือหัวกระดาษราชการ", "Don't ตีกรอบช่องทีละหลักนอกจาก Tax ID", "Don't ใช้แดงตรายางตกแต่ง", "Don't ใช้เงา การ์ดมุมมน หรือ gradient", "Don't ใช้เส้นสีหนาเกิน 1 px ที่ขอบซ้าย", "Don't ใช้ emoji หรือ unicode แทนไอคอน"]
+  }
+}

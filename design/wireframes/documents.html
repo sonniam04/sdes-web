@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SDES · คิวเอกสาร (wireframe)</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .page { padding: 16px 20px 0; display: flex; flex-direction: column; gap: 12px; }
+  .head { display: flex; align-items: center; gap: 12px; }
+  .head h1 { font-size: 20px; font-weight: 700; margin-right: auto; }
+  .search { display: flex; align-items: center; gap: 6px; background: var(--paper); border: 1px solid var(--rule); padding: 5px 10px; width: 300px; color: var(--ink-soft); }
+  .search input { border: 0; font: inherit; flex: 1; outline: none; color: var(--ink); background: transparent; }
+
+  .drop { background: var(--paper); border: 1.5px dashed var(--ink-soft); display: flex; align-items: center; gap: 16px; padding: 12px 16px; }
+  .drop.over { border-style: solid; border-color: var(--focus); background: #F2F6FE; }
+  .drop b { font-weight: 600; }
+  .drop .note { margin-right: auto; }
+  .batch { background: var(--paper); border: 1px solid var(--rule); }
+  .batch-head { display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-bottom: 1px solid var(--rule-soft); font-weight: 600; }
+  .batch-head .note { font-weight: 400; margin-left: auto; }
+  .batch ul { list-style: none; padding: 0; }
+  .batch li { display: grid; grid-template-columns: 16px 280px 140px 1fr; gap: 10px; align-items: center; padding: 4px 16px; font-size: 13px; }
+  .batch li + li { border-top: 1px solid var(--rule-soft); }
+  .batch .ok { color: var(--ok); } .batch .bad { color: var(--stamp); }
+  .batch a { color: var(--ink); font-weight: 600; }
+  .bar { height: 4px; background: var(--rule-soft); } .bar i { display: block; height: 100%; background: var(--ink); }
+
+  .tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--ink); }
+  .tab { font: inherit; background: transparent; border: 1px solid transparent; border-bottom: 0; padding: 6px 14px; color: var(--ink-soft); cursor: pointer; display: flex; gap: 8px; align-items: center; margin-bottom: -1.5px; }
+  .tab.on { background: var(--paper); border-color: var(--ink); border-width: 1.5px; color: var(--ink); font-weight: 700; }
+  .tab .n { font-variant-numeric: tabular-nums; font-size: 12px; }
+  .tabs .act { margin-left: auto; padding-bottom: 6px; }
+
+  .sheet { background: var(--paper); border: 1.5px solid var(--ink); border-top: 0; overflow: auto; max-height: calc(100vh - 330px); min-height: 220px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { position: sticky; top: 0; background: #F4F7FB; text-align: left; font-size: 12px; font-weight: 600; color: var(--ink-soft); padding: 6px 10px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  td { padding: 0 10px; height: 38px; border-bottom: 1px solid var(--rule-soft); white-space: nowrap; }
+  tr:hover td { background: #F7F9FC; }
+  tr.risk td:first-child { box-shadow: inset 1px 0 0 var(--stamp); }
+  td.doc a { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  td.vendor { max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+  td.why { color: var(--ink-soft); font-size: 13px; white-space: normal; }
+  td.why.bad { color: var(--stamp); }
+  .offline { display: none; align-items: center; gap: 8px; background: var(--wait-bg); color: var(--wait); border: 1px solid currentColor; padding: 6px 12px; font-size: 13px; }
+  body.is-offline .offline { display: flex; }
+
+  .empty { display: none; padding: 48px 20px; text-align: center; color: var(--ink-soft); }
+  .empty b { display: block; color: var(--ink); font-size: 16px; margin-bottom: 4px; }
+  body.is-empty table { display: none; } body.is-empty .empty { display: block; }
+
+  .demo { position: fixed; right: 12px; bottom: 12px; background: var(--paper); border: 1px solid var(--rule); padding: 8px 10px; font-size: 12px; display: flex; gap: 8px; align-items: center; }
+  .demo button { font: inherit; font-size: 12px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-approve" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+  <symbol id="i-loader" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></symbol>
+  <symbol id="i-wifi-off" viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></symbol>
+</svg>
+
+<nav class="top" aria-label="เมนูหลัก">
+  <span class="brand">SDES</span>
+  <a class="on" href="documents.html">คิวเอกสาร</a>
+  <a href="#">รออนุมัติ <span class="count">9</span></a>
+  <a href="#">ผู้ขาย</a>
+  <a href="#">รายงาน</a>
+  <span class="user">สมศรี ใจดี · เจ้าหน้าที่บัญชี (ตัวอย่าง)</span>
+</nav>
+
+<main class="page">
+  <div class="head">
+    <h1>คิวเอกสาร</h1>
+    <label class="search"><svg class="ico"><use href="#i-search"/></svg><input placeholder="ค้นหาเลขที่ ผู้ขาย หรือเลขใบกำกับ"></label>
+    <a class="btn primary" href="review.html">เริ่มตรวจ (42) <span class="kbd">Enter</span></a>
+  </div>
+
+  <div class="offline" role="status"><svg class="ico"><use href="#i-wifi-off"/></svg>การเชื่อมต่อหลุด สถานะอาจไม่เป็นปัจจุบัน ระบบกำลังเชื่อมต่อใหม่…</div>
+
+  <label class="drop" id="drop">
+    <svg class="ico" style="width:22px;height:22px"><use href="#i-upload"/></svg>
+    <span><b>ลากไฟล์มาวาง</b> หรือ <u>เลือกไฟล์</u></span>
+    <span class="note">PDF, TIFF, JPG, PNG · ไม่เกิน 20 MB ต่อไฟล์ · ครั้งละหลายไฟล์ได้</span>
+    <input type="file" multiple hidden>
+  </label>
+
+  <section class="batch" aria-label="ผลการอัปโหลดล่าสุด">
+    <div class="batch-head">อัปโหลดล่าสุด: รับ 4 จาก 5 ไฟล์ <span class="note">10:42 น.</span></div>
+    <div class="bar"><i style="width:100%"></i></div>
+    <ul>
+      <li><svg class="ico ok"><use href="#i-check"/></svg><span>siamsupply_IV2569-00981.pdf</span><span class="num">DOC-004218</span><span class="note">กำลังอ่านข้อมูล</span></li>
+      <li><svg class="ico ok"><use href="#i-check"/></svg><span>cleanplus_1102.pdf</span><span class="num">DOC-004215</span><span class="note">อ่านแล้ว รอตรวจ</span></li>
+      <li><svg class="ico bad"><use href="#i-x"/></svg><span>officemate_110928.pdf</span><span class="bad">ไฟล์ซ้ำ</span><span>ไฟล์นี้อัปโหลดแล้วเป็น <a href="#">DOC-004212</a></span></li>
+    </ul>
+  </section>
+
+  <div>
+    <div class="tabs" role="tablist">
+      <button class="tab on" role="tab" aria-selected="true">รอตรวจ <span class="n">42</span></button>
+      <button class="tab" role="tab">รออนุมัติ <span class="n">9</span></button>
+      <button class="tab" role="tab">กำลังดำเนินการ <span class="n">6</span></button>
+      <button class="tab" role="tab">ล้มเหลว <span class="n">3</span></button>
+      <button class="tab" role="tab">เสร็จแล้ว <span class="n">1,284</span></button>
+      <span class="act note">เรียงตาม: เคสเสี่ยงก่อน แล้ววันที่อัปโหลด</span>
+    </div>
+    <div class="sheet">
+      <table>
+        <thead><tr><th>เลขที่</th><th>ผู้ขาย</th><th>เลขใบกำกับ</th><th>วันที่</th><th class="num">ยอดรวม (บาท)</th><th>สถานะ</th><th>สิ่งที่ต้องดู</th></tr></thead>
+        <tbody>
+          <tr class="risk"><td class="doc"><a href="review.html">DOC-004218</a></td><td class="vendor">บริษัท สยามซัพพลาย จำกัด (ตัวอย่าง)</td><td>IV2569-00981</td><td>28/10/2569</td><td class="num">48,150.00</td><td><span class="st wait"><svg class="ico"><use href="#i-edit"/></svg>รอตรวจ</span></td><td class="why bad">ยอดรายการต่างจากมูลค่าสินค้า 0.30 บาท · ไม่มั่นใจ 2 ช่อง</td></tr>
+          <tr class="risk"><td class="doc"><a href="#">DOC-004215</a></td><td class="vendor">บริษัท คลีนพลัส จำกัด (ตัวอย่าง)</td><td>CP/2569/1102</td><td>27/10/2569</td><td class="num">12,840.00</td><td><span class="st wait"><svg class="ico"><use href="#i-edit"/></svg>รอตรวจ</span></td><td class="why bad">เลขใบกำกับ ความมั่นใจ 81%</td></tr>
+          <tr class="risk"><td class="doc"><a href="#">DOC-004211</a></td><td class="vendor">บริษัท พลังงานดี จำกัด (ตัวอย่าง)</td><td>PD-2569/877</td><td>25/10/2569</td><td class="num">21,400.00</td><td><span class="st wait"><svg class="ico"><use href="#i-edit"/></svg>รอตรวจ</span></td><td class="why bad">ผู้ขายใหม่ ไม่อยู่ในทะเบียน</td></tr>
+          <tr><td class="doc"><a href="#">DOC-004217</a></td><td class="vendor">ห้างหุ้นส่วนจำกัด ไทยเครื่องเขียน (ตัวอย่าง)</td><td>TX-25691028</td><td>28/10/2569</td><td class="num">3,210.00</td><td><span class="st wait"><svg class="ico"><use href="#i-edit"/></svg>รอตรวจ</span></td><td class="why">ความมั่นใจ 97%</td></tr>
+          <tr><td class="doc"><a href="#">DOC-004213</a></td><td class="vendor">บริษัท ไอทีโซลูชั่น จำกัด (ตัวอย่าง)</td><td>ITS-2569-0456</td><td>26/10/2569</td><td class="num">96,300.00</td><td><span class="st wait"><svg class="ico"><use href="#i-edit"/></svg>รอตรวจ</span></td><td class="why">ความมั่นใจ 95%</td></tr>
+          <tr><td class="doc"><a href="#">DOC-004210</a></td><td class="vendor">บริษัท ฟู้ดเซอร์วิส จำกัด (ตัวอย่าง)</td><td>FS-00321</td><td>25/10/2569</td><td class="num">5,885.00</td><td><span class="st wait"><svg class="ico"><use href="#i-edit"/></svg>รอตรวจ</span></td><td class="why">ความมั่นใจ 99%</td></tr>
+          <tr><td class="doc"><a href="#">DOC-004208</a></td><td class="vendor">บริษัท การพิมพ์ไทย จำกัด (ตัวอย่าง)</td><td>TP-69-1001</td><td>24/10/2569</td><td class="num">14,980.00</td><td><span class="st wait"><svg class="ico"><use href="#i-edit"/></svg>รอตรวจ</span></td><td class="why">ความมั่นใจ 93%</td></tr>
+          <tr><td class="doc"><a href="#">DOC-004214</a></td><td class="vendor">—</td><td>—</td><td>—</td><td class="num">—</td><td><span class="st run"><svg class="ico"><use href="#i-loader"/></svg>กำลังอ่าน</span></td><td class="why">อัปโหลด 2 นาทีที่แล้ว</td></tr>
+          <tr><td class="doc"><a href="#">DOC-004209</a></td><td class="vendor">—</td><td>—</td><td>—</td><td class="num">—</td><td><span class="st bad"><svg class="ico"><use href="#i-alert"/></svg>อ่านไม่สำเร็จ</span></td><td class="why"><button class="btn" style="padding:1px 10px"><svg class="ico"><use href="#i-refresh"/></svg>อ่านใหม่</button> ภาพไม่ชัด</td></tr>
+          <tr><td class="doc"><a href="#">DOC-004216</a></td><td class="vendor">บริษัท ขนส่งเร็ว จำกัด (ตัวอย่าง)</td><td>INV-7741</td><td>27/10/2569</td><td class="num">186,900.00</td><td><span class="st wait"><svg class="ico"><use href="#i-approve"/></svg>รออนุมัติ</span></td><td class="why">ยอดเงินสูงเกินเกณฑ์</td></tr>
+          <tr><td class="doc"><a href="#">DOC-004212</a></td><td class="vendor">บริษัท ออฟฟิศเมท จำกัด (ตัวอย่าง)</td><td>OM-110928</td><td>26/10/2569</td><td class="num">7,490.00</td><td><span class="st ok"><svg class="ico"><use href="#i-send"/></svg>ส่ง ERP แล้ว</span></td><td class="why">ERP-88213</td></tr>
+        </tbody>
+      </table>
+      <div class="empty"><b>ยังไม่มีเอกสารรอตรวจ</b>ลากไฟล์ใบแจ้งหนี้หรือใบกำกับภาษีมาวางด้านบนเพื่อเริ่ม</div>
+    </div>
+  </div>
+  <p class="synthetic">ข้อมูลทั้งหมดในหน้านี้เป็นตัวอย่างสำหรับ wireframe ไม่ใช่ข้อมูลจริง · แถวในแท็บ “รอตรวจ” แสดงสถานะอื่นปนเพื่อให้เห็นป้ายทุกแบบ</p>
+</main>
+
+<div class="demo" aria-label="สลับ state ของ wireframe">ดู state:
+  <button onclick="document.body.classList.toggle('is-empty')">คิวว่าง</button>
+  <button onclick="document.body.classList.toggle('is-offline')">เชื่อมต่อหลุด</button>
+</div>
+<script>
+  const d = document.getElementById('drop');
+  ['dragenter','dragover'].forEach(e => d.addEventListener(e, ev => { ev.preventDefault(); d.classList.add('over'); }));
+  ['dragleave','drop'].forEach(e => d.addEventListener(e, ev => { ev.preventDefault(); d.classList.remove('over'); }));
+</script>
+</body>
+</html>
