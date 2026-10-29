@@ -2,14 +2,27 @@
 
 import { useState, type ReactNode } from "react";
 
-type Pane = "doc" | "form";
+export type Pane = "doc" | "form";
 
 /**
  * จอกว้าง ≥ 1280 px: เอกสาร 55% / ฟอร์ม 45% เลื่อนแยกกัน
  * จอแคบกว่า: สลับแท็บ "เอกสาร / ข้อมูล" (เริ่มที่ข้อมูล เพราะเป็นที่ทำงาน)
  */
-export function SplitView({ doc, form }: { doc: ReactNode; form: ReactNode }) {
-  const [pane, setPane] = useState<Pane>("form");
+export function SplitView({
+  doc,
+  form,
+  pane: controlled,
+  onPaneChange,
+}: {
+  doc: ReactNode;
+  form: ReactNode;
+  /** ควบคุมแท็บจากภายนอก (เช่น กดรายการ "ต้องตรวจ" แล้วสลับไปดูตำแหน่งในเอกสาร) */
+  pane?: Pane;
+  onPaneChange?: (pane: Pane) => void;
+}) {
+  const [own, setOwn] = useState<Pane>("form");
+  const pane = controlled ?? own;
+  const setPane = (p: Pane) => (onPaneChange ? onPaneChange(p) : setOwn(p));
   const tab = (p: Pane, label: string) => (
     <button
       role="tab"

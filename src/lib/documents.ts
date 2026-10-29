@@ -14,6 +14,8 @@ export type DocumentRow = {
   invoiceNo: string | null;
   invoiceDate: string | null;
   grandTotal: string | null;
+  /** จำนวนรายการที่ต้องแก้ก่อนยืนยัน (ไม่มีในแถวที่มาจาก event real-time จนกว่าจะโหลดใหม่) */
+  issueCount?: number;
   createdAt: string;
   updatedAt: string;
 };
