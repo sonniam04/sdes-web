@@ -70,6 +70,7 @@ async function mockBackend(page: Page, opts: { roles: Role[]; docs: Doc[]; userI
   const user = { id: opts.userId ?? "u-me", email: "me@test.local", displayName: "สมศรี ทดสอบ", roles: opts.roles, mustChangePassword: false };
   const calls: { method: string; path: string; body?: Record<string, unknown> }[] = [];
   const docs = new Map(opts.docs.map((d) => [d.id, d]));
+  let settings = { confidenceThreshold: 0.85, highAmountThreshold: null as string | null, companyTaxId: "0994000165617", companyName: "บริษัททดสอบ" };
   await page.route(/\/(auth|api)\//, async (route) => {
     const req = route.request();
     const path = new URL(req.url()).pathname;
@@ -83,6 +84,10 @@ async function mockBackend(page: Page, opts: { roles: Role[]; docs: Doc[]; userI
         createdAt: `2026-10-29T0${3 - i}:00:00Z`, updatedAt: "2026-10-29T03:00:00Z",
       }));
       return json(route, 200, { items, serverTime: new Date().toISOString() });
+    }
+    if (path === "/api/settings/risk") {
+      if (req.method() === "PUT") settings = body as typeof settings;
+      return json(route, 200, settings);
     }
     if (path === "/api/documents/approvals")
       return json(route, 200, {
@@ -263,5 +268,84 @@ test.describe("5.7 เชื่อมจากคิว", () => {
     await page.getByRole("link", { name: "ตรวจ" }).click();
     await expect(page).toHaveURL(/\/documents\/d1$/);
     await expect(page.getByTestId("check-bar")).toBeVisible();
+  });
+});
+
+const pendingDoc = (over: Parameters<typeof detail>[2] = {}) =>
+  detail("p1", "DOC-000201", {
+    status: "PENDING_APPROVAL",
+    verifiedById: "u-clerk",
+    riskFlags: [{ code: "MONEY_EDITED", message: "มีการแก้ยอดเงินหลังการอ่าน", value: ["header.vatAmount"] }],
+    edits: [{ field: "header.vatAmount", aiValue: "70.00", before: "70.00", after: "700.00", by: { id: "u-clerk", name: "สมชาย เสมียน" }, at: "2026-10-29T03:10:00Z" }],
+    ...over,
+  });
+
+test.describe("6.1 คิวรออนุมัติ", () => {
+  test("AP Lead เห็นเมนูและคิวพร้อมเหตุผล", async ({ page }) => {
+    await mockBackend(page, { roles: ["AP_LEAD"], docs: [pendingDoc()] });
+    await page.goto("/documents");
+    await page.getByRole("link", { name: "รออนุมัติ" }).click();
+    await expect(page).toHaveURL(/\/approvals$/);
+    await expect(page.locator('[data-doc="DOC-000201"]')).toContainText("มีการแก้ยอดเงินหลังการอ่าน");
+  });
+
+  test("Clerk ไม่เห็นเมนูรออนุมัติ", async ({ page }) => {
+    await mockBackend(page, { roles: ["AP_CLERK"], docs: [] });
+    await page.goto("/documents");
+    await expect(page.getByRole("heading", { name: "คิวเอกสาร" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "รออนุมัติ" })).toHaveCount(0);
+  });
+});
+
+test.describe("6.2 โหมดอนุมัติ", () => {
+  test("เห็นเหตุผล ประวัติการแก้ ฟอร์มอ่านอย่างเดียว แล้วอนุมัติผ่านกล่องยืนยัน", async ({ page }) => {
+    const { docs } = await mockBackend(page, { roles: ["AP_LEAD"], docs: [pendingDoc()] });
+    await page.goto("/documents/p1");
+    await expect(page.getByTestId("risk-reasons")).toContainText("มีการแก้ยอดเงินหลังการอ่าน (ภาษีมูลค่าเพิ่ม)");
+    await expect(page.getByTestId("edit-history")).toContainText("สมชาย เสมียน");
+    await expect(page.getByTestId("edit-history")).toContainText("700.00");
+    await expect(page.locator('[data-field="header.vendorName"] input')).toHaveAttribute("readonly", "");
+    await page.getByRole("button", { name: "อนุมัติ", exact: true }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "อนุมัติ" }).click();
+    await expect(page).toHaveURL(/\/approvals$/);
+    expect(docs.get("p1")!.status).toBe("APPROVED");
+  });
+
+  test("ปฏิเสธต้องกรอกเหตุผลก่อน", async ({ page }) => {
+    const { calls } = await mockBackend(page, { roles: ["AP_LEAD"], docs: [pendingDoc()] });
+    await page.goto("/documents/p1");
+    await page.getByRole("button", { name: "ปฏิเสธ", exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("button", { name: "ปฏิเสธ" })).toBeDisabled();
+    await dialog.getByRole("textbox").fill("ผู้ขายไม่อยู่ในรายชื่อที่ทำสัญญา");
+    await dialog.getByRole("button", { name: "ปฏิเสธ" }).click();
+    await expect(page).toHaveURL(/\/approvals$/);
+    expect(calls.find((c) => c.path.endsWith("/reject"))?.body).toMatchObject({ reason: "ผู้ขายไม่อยู่ในรายชื่อที่ทำสัญญา" });
+  });
+
+  test("ผู้ที่ยืนยันเองเห็นเหตุผลว่าอนุมัติไม่ได้ และปุ่มกดไม่ได้", async ({ page }) => {
+    await mockBackend(page, { roles: ["AP_LEAD"], docs: [pendingDoc({ verifiedById: "u-me" })] });
+    await page.goto("/documents/p1");
+    await expect(page.getByTestId("self-approval")).toHaveText("อนุมัติเอกสารที่คุณยืนยันหรือแก้ไขเองไม่ได้ ต้องให้หัวหน้าคนอื่นอนุมัติ");
+    await expect(page.getByRole("button", { name: "อนุมัติ", exact: true })).toBeDisabled();
+  });
+});
+
+test.describe("6.3 ตั้งค่าความเสี่ยง", () => {
+  test("บันทึกค่าถูกต้องได้ และ 150% ถูกปฏิเสธพร้อมข้อความ", async ({ page }) => {
+    const { calls } = await mockBackend(page, { roles: ["SYS_ADMIN"], docs: [] });
+    await page.goto("/admin/settings");
+    const pct = page.getByLabel("เกณฑ์ความมั่นใจของ AI (%)");
+    await expect(pct).toHaveValue("85");
+    await pct.fill("150");
+    await page.getByRole("button", { name: "บันทึก" }).click();
+    await expect(page.locator("form").getByRole("alert")).toHaveText("เกณฑ์ความมั่นใจต้องอยู่ระหว่าง 0 ถึง 100%");
+    expect(calls.some((c) => c.method === "PUT")).toBe(false);
+
+    await pct.fill("90");
+    await page.getByLabel("เกณฑ์ยอดสูง (บาท)").fill("500000");
+    await page.getByRole("button", { name: "บันทึก" }).click();
+    await expect(page.getByText("บันทึกการตั้งค่าแล้ว")).toBeVisible();
+    expect(calls.find((c) => c.method === "PUT")?.body).toMatchObject({ confidenceThreshold: 0.9, highAmountThreshold: "500000" });
   });
 });
