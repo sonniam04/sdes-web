@@ -21,7 +21,8 @@ if (!existsSync(from)) {
 }
 
 // import แบบ NodeNext (./x.js) → แบบ bundler (./x)
-const transform = (src) => HEADER + src.replace(/from "\.\/([\w-]+)\.js"/g, 'from "./$1"');
+// ต้นฉบับอาจเป็น CRLF หลัง git checkout บน Windows — ใช้ LF เสมอ
+const transform = (src) => HEADER + src.replace(/\r\n/g, "\n").replace(/from "\.\/([\w-]+)\.js"/g, 'from "./$1"');
 
 const files = new Map();
 for (const m of MODULES) {
