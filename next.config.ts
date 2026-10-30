@@ -7,6 +7,39 @@ const isProd = process.env.NODE_ENV === "production";
 // backend (sdes-service) — browser เรียกผ่าน origin เดียวกับเว็บ เพื่อให้ refresh cookie
 // (HttpOnly, SameSite=Strict, Path=/auth) ถูกส่งไปด้วย (design D9: ไม่มี BFF แยก)
 const API_ORIGIN = process.env.SDES_API_ORIGIN ?? "http://127.0.0.1:3000";
+// socket.io ต่อตรงไปที่ API (rewrite ของ Next ไม่รองรับ websocket) จึงต้องอนุญาตใน connect-src
+const WS_URL = process.env.NEXT_PUBLIC_SDES_WS_URL ?? "http://127.0.0.1:3000";
+const wsOrigin = new URL(WS_URL);
+const wsSocket = `${wsOrigin.protocol === "https:" ? "wss:" : "ws:"}//${wsOrigin.host}`;
+
+/**
+ * Content-Security-Policy (spec platform-security "Security headers")
+ * - script: Next ใส่ inline script สำหรับ hydration และ dev ต้องใช้ eval (react-refresh)
+ * - worker/blob: PDF.js worker และ blob URL ของไฟล์ต้นฉบับ
+ */
+const CSP = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' blob: data:",
+  "font-src 'self' data:",
+  `connect-src 'self' ${wsOrigin.origin} ${wsSocket}`,
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
+
+const SECURITY_HEADERS = [
+  { key: "Content-Security-Policy", value: CSP },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  // ส่งเมื่อใช้ HTTPS เท่านั้น — browser ไม่สนใจ HSTS บน http
+  ...(isProd ? [{ key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" }] : []),
+];
 
 const nextConfig: NextConfig = {
   pageExtensions: isProd ? ["tsx", "ts"] : ["dev.tsx", "tsx", "ts"],
@@ -14,6 +47,9 @@ const nextConfig: NextConfig = {
   distDir: isProd ? ".next" : ".next-dev",
   // ป้าย dev ของ Next บังแถบปุ่มล่างของหน้าทำงาน
   devIndicators: false,
+  async headers() {
+    return [{ source: "/:path*", headers: SECURITY_HEADERS }];
+  },
   async rewrites() {
     return [
       { source: "/auth/:path*", destination: `${API_ORIGIN}/auth/:path*` },
