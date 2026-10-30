@@ -165,9 +165,9 @@ function Review() {
         }}
       >
         {mode === "edit" && <CheckBar items={checks} current={current} onPick={pick} />}
+        {showSyncPanel(doc) && <SyncPanel doc={doc} />}
         {mode !== "edit" && doc.riskFlags.length > 0 && <RiskReasons flags={doc.riskFlags} />}
         <ReviewForm data={r.data} meta={doc.fieldMeta} issues={r.issues} edited={edited} readOnly={mode !== "edit"} onChange={r.update} />
-        {showSyncPanel(doc) && <SyncPanel doc={doc} />}
         {mode !== "edit" && <EditHistory edits={doc.edits} />}
       </div>
       {mode === "edit" && (
