@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDateTime, formatMoney, formatThaiDate, parseAmountInput } from "./format";
+import { formatDateTime, formatMoney, formatSeconds, formatThaiDate, formatThaiMonth, parseAmountInput } from "./format";
 
 describe("formatMoney", () => {
   it("ใส่ตัวคั่นหลักพันและทศนิยม 2 ตำแหน่ง", () => {
@@ -53,5 +53,21 @@ describe("formatDateTime", () => {
   it("วันที่ พ.ศ. และเวลา 24 ชั่วโมงตามเวลาไทย", () => {
     expect(formatDateTime("2026-10-28T18:30:00Z")).toBe("29/10/2569 01:30");
     expect(formatDateTime("2026-10-29T07:05:00Z")).toBe("29/10/2569 14:05");
+  });
+});
+
+describe("formatThaiMonth", () => {
+  it("YYYY-MM → ชื่อเดือนย่อ + ปี พ.ศ.", () => {
+    expect(formatThaiMonth("2026-10")).toBe("ต.ค. 2569");
+    expect(formatThaiMonth("2027-01")).toBe("ม.ค. 2570");
+  });
+});
+
+describe("formatSeconds", () => {
+  it("วินาทีเป็นข้อความอ่านง่าย และ null เป็นขีด", () => {
+    expect(formatSeconds(18)).toBe("18 วินาที");
+    expect(formatSeconds(240)).toBe("4 นาที");
+    expect(formatSeconds(5430)).toBe("1 ชม. 31 นาที");
+    expect(formatSeconds(null)).toBe("—");
   });
 });

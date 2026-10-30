@@ -53,3 +53,20 @@ const bangkokTime = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Bangkok",
 export function formatDateTime(iso: string): string {
   return `${formatThaiDate(iso)} ${bangkokTime.format(new Date(iso))}`;
 }
+
+const THAI_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+/** "2026-10" → "ต.ค. 2569" */
+export function formatThaiMonth(ym: string): string {
+  const [y, m] = ym.split("-");
+  return `${THAI_MONTHS[Number(m) - 1]} ${Number(y) + 543}`;
+}
+
+/** วินาที → "18 วินาที" / "4 นาที" / "1 ชม. 31 นาที" */
+export function formatSeconds(sec: number | null): string {
+  if (sec === null) return "—";
+  if (sec < 60) return `${Math.round(sec)} วินาที`;
+  const min = Math.round(sec / 60);
+  if (min < 60) return `${min} นาที`;
+  return `${Math.floor(min / 60)} ชม. ${min % 60} นาที`;
+}
