@@ -31,6 +31,11 @@ pnpm dev --port 3100
 | `/documents/[id]` | Clerk, Lead, Exec | หน้าตรวจสองฝั่ง — ดูรายละเอียดด้านล่าง |
 | `/approvals` | AP Lead | คิวรออนุมัติพร้อมเหตุผลความเสี่ยง |
 | `/admin/users`, `/admin/settings` | System Admin | จัดการผู้ใช้, เกณฑ์ความเสี่ยงและ Tax ID บริษัท |
+| `/admin/erp` | System Admin | ตั้งค่าการเชื่อมต่อ ERP (Odoo หรือ webhook), ทดสอบแสดงผลรายข้อ, สวิตช์ส่งอัตโนมัติ (เปิดได้หลังทดสอบผ่าน) |
+| `/admin/sync` | System Admin, Exec | ภาพรวมคิวและการส่ง ERP (รีเฟรชทุก 30 วินาที), รายการ `SYNC_FAILED` — Admin เลือกหลายรายการแล้วส่งใหม่ได้, Exec อ่านอย่างเดียว |
+| `/audit` | System Admin, Exec | ค้นหา audit trail ตามช่วงเวลา ผู้กระทำ ประเภท และเลขเอกสาร พร้อมค่าก่อน/หลัง และส่งออก CSV (UTF-8 + BOM เปิดใน Excel ได้) |
+
+เมนูแสดงตาม role ใน `src/lib/roles.ts` (สำเนาของ permission matrix ใช้ซ่อนเมนูเท่านั้น — การบังคับสิทธิ์อยู่ที่ API) System Admin ไม่มีสิทธิ์เปิดเอกสาร จึงเห็นเลขเอกสารในหน้าติดตามและ audit แบบไม่มีลิงก์
 
 ### หน้าตรวจเอกสาร (`/documents/[id]`)
 
@@ -42,6 +47,7 @@ pnpm dev --port 3100
 - **ยืนยัน:** `Ctrl+Enter` — ถ้ายังมีจุดที่ต้องแก้จะพาไปที่ช่องนั้นแทน ยืนยันแล้วเปิดเอกสารรอตรวจฉบับถัดไปพร้อม toast ที่มีปุ่ม "กลับไปดู"
 - **โหมดอนุมัติ** (เอกสาร `PENDING_APPROVAL` + AP Lead): ฟอร์มอ่านอย่างเดียว, เหตุผลความเสี่ยง, ประวัติการแก้ (ค่า AI/ก่อน/หลัง/ผู้แก้), อนุมัติหรือปฏิเสธผ่านกล่องยืนยัน ผู้ที่ยืนยันหรือแก้เอกสารเองจะเห็นเหตุผลว่าอนุมัติไม่ได้
 - จอแคบกว่า 1280 px สลับเป็นแท็บ "เอกสาร / ข้อมูล" เริ่มที่ข้อมูล และกดรายการ "ต้องตรวจ" แล้วสลับไปดูตำแหน่งในเอกสาร
+- **การส่งเข้า ERP:** เมื่อเอกสารเข้าสู่การส่งแล้ว มีกล่องแสดงเลขอ้างอิง ERP และเวลา, เหตุผลล่าสุดเมื่อ `SYNC_FAILED` และประวัติการส่งทุกครั้ง อัปเดตตาม event real-time ไม่มีปุ่มส่งใหม่ในหน้านี้ (ส่งใหม่ได้เฉพาะ Admin ที่ `/admin/sync`)
 
 ## กติกากลางที่คัดลอกจาก sdes-service
 
@@ -62,6 +68,10 @@ pnpm sync:core --check  # ตรวจว่าสำเนาตรงกับ
 | `NEXT_PUBLIC_SDES_WS_URL` | `http://127.0.0.1:3000` | ที่อยู่ socket.io ที่ browser ต่อเพื่อรับสถานะเอกสาร |
 
 `NEXT_PUBLIC_*` ถูกฝังตอน build — เปลี่ยนแล้วต้อง build ใหม่
+
+## Security headers
+
+`next.config.ts` ตั้ง Content-Security-Policy และ header ความปลอดภัยให้ทุกหน้า: `connect-src` อนุญาตเฉพาะ origin ตัวเองกับ origin ของ `NEXT_PUBLIC_SDES_WS_URL` (socket.io), `worker-src 'self' blob:` สำหรับ PDF.js, `frame-ancestors 'none'`, `X-Content-Type-Options: nosniff` และ `Referrer-Policy` — ถ้าย้าย API ไป origin อื่น ต้องตั้ง `NEXT_PUBLIC_SDES_WS_URL` ตอน build ไม่อย่างนั้น browser จะบล็อกการเชื่อมต่อ real-time CI รัน `pnpm audit:gate` เหมือน sdes-service (รายการยกเว้นใน `security/audit-exceptions.json`)
 
 ## ทดสอบ
 
