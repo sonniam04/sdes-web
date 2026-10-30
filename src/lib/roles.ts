@@ -12,7 +12,9 @@ export const MENU: readonly MenuItem[] = [
   { href: "/reports", label: "รายงาน", roles: ["FINANCE_EXEC"] },
   { href: "/audit", label: "Audit trail", roles: ["FINANCE_EXEC", "SYS_ADMIN"] },
   { href: "/admin/sync", label: "ติดตามการส่ง", roles: ["FINANCE_EXEC", "SYS_ADMIN"] },
+  { href: "/admin/logs", label: "System logs", roles: ["SYS_ADMIN"] },
   { href: "/admin/users", label: "ผู้ใช้", roles: ["SYS_ADMIN"] },
+  { href: "/admin/api-keys", label: "API keys", roles: ["SYS_ADMIN"] },
   { href: "/admin/erp", label: "ERP", roles: ["SYS_ADMIN"] },
   { href: "/admin/settings", label: "ตั้งค่า", roles: ["SYS_ADMIN"] },
 ];
