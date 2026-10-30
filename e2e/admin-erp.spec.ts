@@ -86,7 +86,7 @@ test.describe("6.1 ตั้งค่าการเชื่อมต่อ ERP
     await page.getByLabel("บัญชีค่าใช้จ่าย (id)").fill("40");
     await page.getByLabel("API key").fill("super-secret-key");
     await page.getByRole("button", { name: "บันทึก" }).click();
-    await expect(page.getByText("บันทึกการตั้งค่าแล้ว")).toBeVisible();
+    await expect(page.getByText("บันทึกการตั้งค่าแล้ว", { exact: true })).toBeVisible();
 
     expect(calls.find((c) => c.method === "PUT")?.body).toEqual({
       adapter: "odoo",
@@ -121,7 +121,7 @@ test.describe("6.1 ตั้งค่าการเชื่อมต่อ ERP
     await page.goto("/admin/erp");
     await page.getByLabel("Journal ซื้อ (id)").fill("3");
     await page.getByRole("button", { name: "บันทึก" }).click();
-    await expect(page.getByText("บันทึกการตั้งค่าแล้ว")).toBeVisible();
+    await expect(page.getByText("บันทึกการตั้งค่าแล้ว", { exact: true })).toBeVisible();
     const put = calls.find((c) => c.method === "PUT")!.body!;
     expect(put.journalId).toBe(3);
     expect("secret" in put).toBe(false);
@@ -171,7 +171,7 @@ test.describe("6.1 ตั้งค่าการเชื่อมต่อ ERP
     // แก้แล้วยังไม่บันทึก: ต้องบันทึกก่อนทดสอบ
     await expect(page.getByRole("button", { name: "ทดสอบการเชื่อมต่อ" })).toBeDisabled();
     await page.getByRole("button", { name: "บันทึก" }).click();
-    await expect(page.getByText("บันทึกแล้ว การส่งอัตโนมัติถูกปิด ทดสอบการเชื่อมต่ออีกครั้งก่อนเปิด")).toBeVisible();
+    await expect(page.getByText("บันทึกแล้ว การส่งอัตโนมัติถูกปิด ทดสอบการเชื่อมต่ออีกครั้งก่อนเปิด", { exact: true })).toBeVisible();
     await expect(autoSwitch(page)).toHaveAttribute("aria-checked", "false");
     await expect(autoSwitch(page)).toBeDisabled();
     expect(current().autoSync).toBe(false);

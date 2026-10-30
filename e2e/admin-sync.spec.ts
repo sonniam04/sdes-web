@@ -78,7 +78,7 @@ test.describe("6.2 ติดตามคิวและการส่ง ERP", 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toContainText("DOC-000201, DOC-000202, DOC-000203");
     await dialog.getByRole("button", { name: "ส่งใหม่" }).click();
-    await expect(page.getByText("ส่งใหม่แล้ว 3 ฉบับ")).toBeVisible();
+    await expect(page.getByText("ส่งใหม่แล้ว 3 ฉบับ", { exact: true })).toBeVisible();
     expect(calls.find((c) => c.path === "/api/documents/resend")?.body).toEqual({ ids: ["f1", "f2", "f3"] });
     const rows = page.getByRole("region", { name: "ส่ง ERP ไม่สำเร็จ" }).locator("tbody tr");
     await expect(rows).toHaveCount(1);
