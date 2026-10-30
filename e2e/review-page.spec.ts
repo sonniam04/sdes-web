@@ -349,7 +349,7 @@ test.describe("6.3 ตั้งค่าความเสี่ยง", () => {
     await pct.fill("90");
     await page.getByLabel("เกณฑ์ยอดสูง (บาท)").fill("500000");
     await page.getByRole("button", { name: "บันทึก" }).click();
-    await expect(page.getByText("บันทึกการตั้งค่าแล้ว")).toBeVisible();
+    await expect(page.getByText("บันทึกการตั้งค่าแล้ว", { exact: true })).toBeVisible();
     expect(calls.find((c) => c.method === "PUT")?.body).toMatchObject({ confidenceThreshold: 0.9, highAmountThreshold: "500000" });
   });
 });

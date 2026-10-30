@@ -154,7 +154,7 @@ test.describe("7.4 หน้าเอกสาร (API จำลอง)", () => 
 
     await page.getByRole("tab", { name: /ล้มเหลว/ }).click();
     await page.locator("tr[data-doc=DOC-000102]").getByRole("button", { name: "อ่านใหม่" }).click();
-    await expect(page.getByText("ส่ง DOC-000102 ไปอ่านใหม่แล้ว")).toBeVisible();
+    await expect(page.getByText("ส่ง DOC-000102 ไปอ่านใหม่แล้ว", { exact: true })).toBeVisible();
   });
 
   test("Finance Exec ดูคิวได้ แต่ไม่มีพื้นที่อัปโหลดและไม่มีปุ่มอ่านใหม่", async ({ page }) => {
