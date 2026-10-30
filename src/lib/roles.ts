@@ -12,6 +12,7 @@ export const MENU: readonly MenuItem[] = [
   { href: "/reports", label: "รายงาน", roles: ["FINANCE_EXEC"] },
   { href: "/audit", label: "Audit trail", roles: ["FINANCE_EXEC", "SYS_ADMIN"] },
   { href: "/admin/users", label: "ผู้ใช้", roles: ["SYS_ADMIN"] },
+  { href: "/admin/erp", label: "ERP", roles: ["SYS_ADMIN"] },
   { href: "/admin/settings", label: "ตั้งค่า", roles: ["SYS_ADMIN"] },
 ];
 

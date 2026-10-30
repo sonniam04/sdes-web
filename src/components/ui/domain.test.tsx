@@ -160,7 +160,7 @@ describe("AppShell", () => {
     AP_CLERK: ["/documents", "/vendors"],
     AP_LEAD: ["/documents", "/approvals", "/vendors"],
     FINANCE_EXEC: ["/documents", "/reports", "/audit"],
-    SYS_ADMIN: ["/audit", "/admin/users", "/admin/settings"],
+    SYS_ADMIN: ["/audit", "/admin/users", "/admin/erp", "/admin/settings"],
   };
 
   it.each(ROLES)("เมนูของ %s ตรงกับ permission matrix", (role) => {

@@ -46,3 +46,10 @@ export function formatThaiDate(iso: string): string {
   const get = (t: string) => parts.find((p) => p.type === t)!.value;
   return `${get("day")}/${get("month")}/${Number(get("year")) + 543}`;
 }
+
+const bangkokTime = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+
+/** ISO timestamp → "29/10/2569 14:05" (เวลาไทย) */
+export function formatDateTime(iso: string): string {
+  return `${formatThaiDate(iso)} ${bangkokTime.format(new Date(iso))}`;
+}

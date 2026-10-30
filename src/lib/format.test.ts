@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatMoney, formatThaiDate, parseAmountInput } from "./format";
+import { formatDateTime, formatMoney, formatThaiDate, parseAmountInput } from "./format";
 
 describe("formatMoney", () => {
   it("ใส่ตัวคั่นหลักพันและทศนิยม 2 ตำแหน่ง", () => {
@@ -46,5 +46,12 @@ describe("formatThaiDate", () => {
   it("timestamp ใช้เขตเวลา Asia/Bangkok", () => {
     // 2026-10-28T18:30Z = 29 ต.ค. 01:30 เวลาไทย
     expect(formatThaiDate("2026-10-28T18:30:00Z")).toBe("29/10/2569");
+  });
+});
+
+describe("formatDateTime", () => {
+  it("วันที่ พ.ศ. และเวลา 24 ชั่วโมงตามเวลาไทย", () => {
+    expect(formatDateTime("2026-10-28T18:30:00Z")).toBe("29/10/2569 01:30");
+    expect(formatDateTime("2026-10-29T07:05:00Z")).toBe("29/10/2569 14:05");
   });
 });
