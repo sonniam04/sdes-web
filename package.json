@@ -11,7 +11,9 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
-    "sync:core": "node scripts/sync-core.mjs"
+    "sync:core": "node scripts/sync-core.mjs",
+    "audit:gate": "node scripts/audit-gate.mjs",
+    "test:scripts": "node --test scripts/audit-gate.test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.3.1",
