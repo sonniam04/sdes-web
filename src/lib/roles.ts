@@ -24,6 +24,9 @@ export const ROLE_LABEL: Record<Role, string> = {
   SYS_ADMIN: "ผู้ดูแลระบบ",
 };
 
+/** role ที่เปิดหน้าเอกสารได้ (permission document.view) — SYS_ADMIN ไม่มี */
+export const canViewDocuments = (roles: readonly Role[]) => roles.some((r) => r !== "SYS_ADMIN");
+
 /** เมนูที่ผู้ใช้เห็น = รวมสิทธิ์ของทุก role ที่มี */
 export function menuFor(roles: readonly Role[]): MenuItem[] {
   return MENU.filter((m) => m.roles.some((r) => roles.includes(r)));

@@ -14,6 +14,7 @@ import { ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { actionLabel, auditQuery, changeOf, type AuditEvent, type AuditFilters } from "@/lib/audit";
 import { formatDateTime } from "@/lib/format";
+import { canViewDocuments } from "@/lib/roles";
 
 const PAGE_SIZE = 50;
 /** Radix Select ไม่รับค่าว่าง จึงใช้ค่านี้แทน "ทั้งหมด" */
@@ -31,8 +32,9 @@ export default function AuditPage() {
 }
 
 function AuditTrail() {
-  const { client } = useAuth();
+  const { state, client } = useAuth();
   const toast = useToast();
+  const canOpen = state.status === "authenticated" && canViewDocuments(state.user.roles);
   const [facets, setFacets] = useState<Facets>();
   const [draft, setDraft] = useState<AuditFilters>({});
   const [applied, setApplied] = useState<AuditFilters>({});
@@ -104,12 +106,12 @@ function AuditTrail() {
       header: "สิ่งที่ถูกกระทำ",
       width: "120px",
       render: (r) =>
-        r.entityType === "document" && r.entityId ? (
+        r.entityType === "document" && r.entityId && canOpen ? (
           <Link href={`/documents/${r.entityId}`} className="underline-offset-2 hover:underline">
             เอกสาร
           </Link>
         ) : (
-          <span className="text-text-muted">{r.entityType}</span>
+          <span className="text-text-muted">{r.entityType === "document" ? "เอกสาร" : r.entityType}</span>
         ),
     },
     {

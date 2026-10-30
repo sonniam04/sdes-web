@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/Toast";
 import { ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { formatDateTime, formatMoney } from "@/lib/format";
+import { canViewDocuments } from "@/lib/roles";
 import { DOCUMENT_STATUSES, type DocumentStatus } from "@/lib/status";
 
 /** spec: ข้อมูลต้องเป็นปัจจุบันไม่เกิน 30 วินาที */
@@ -48,6 +49,7 @@ function SyncMonitor() {
 
   // Exec อ่านอย่างเดียว — ส่งใหม่ได้เฉพาะ SYS_ADMIN (permission sync.resend)
   const canResend = state.status === "authenticated" && state.user.roles.includes("SYS_ADMIN");
+  const canOpen = state.status === "authenticated" && canViewDocuments(state.user.roles);
 
   const load = useCallback(async () => {
     try {
@@ -118,11 +120,14 @@ function SyncMonitor() {
       key: "docNo",
       header: "เลขเอกสาร",
       width: "120px",
-      render: (r) => (
-        <Link href={`/documents/${r.id}`} className="font-mono underline-offset-2 hover:underline">
-          {r.docNo}
-        </Link>
-      ),
+      render: (r) =>
+        canOpen ? (
+          <Link href={`/documents/${r.id}`} className="font-mono underline-offset-2 hover:underline">
+            {r.docNo}
+          </Link>
+        ) : (
+          <span className="font-mono">{r.docNo}</span>
+        ),
     },
     { key: "vendor", header: "ผู้ขาย", render: (r) => r.vendorName ?? "—" },
     { key: "total", header: "ยอดรวม", align: "right", width: "120px", render: (r) => (r.grandTotal ? formatMoney(r.grandTotal) : "—") },

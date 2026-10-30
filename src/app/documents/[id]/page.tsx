@@ -10,6 +10,7 @@ import { CheckBar } from "@/components/review/CheckBar";
 import { DocumentPane } from "@/components/review/DocumentPane";
 import { ApprovalPanel, EditHistory, RiskReasons } from "@/components/review/ApprovalPanel";
 import { ReviewForm } from "@/components/review/ReviewForm";
+import { SyncPanel, showSyncPanel } from "@/components/review/SyncPanel";
 import { Button } from "@/components/ui/Button";
 import { ErrorState, Skeleton } from "@/components/ui/States";
 import { SplitView, type Pane } from "@/components/ui/SplitView";
@@ -18,6 +19,7 @@ import { useToast } from "@/components/ui/Toast";
 import { ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { DEFAULT_RISK_THRESHOLDS, type RiskFlag } from "@/lib/core";
+import { useDocumentStatusEvents } from "@/lib/documents";
 import { afterConfirmText, buildCheckList, editedPaths, fieldLabel, nextCheck, valueAt } from "@/lib/review";
 import { useReview, type SaveState } from "@/lib/useReview";
 
@@ -58,6 +60,11 @@ function Review() {
   const canApprove = roles.includes("AP_LEAD");
   const doc = r.doc;
   const mode = !doc ? "read" : doc.status === "EXTRACTED" && canEdit ? "edit" : doc.status === "PENDING_APPROVAL" && canApprove ? "approve" : "read";
+
+  // สถานะเปลี่ยนจากที่อื่น (เช่น worker ส่ง ERP เสร็จ) → โหลดใหม่ ยกเว้นระหว่างแก้ไขซึ่งมีการกันชนกันด้วย version อยู่แล้ว
+  useDocumentStatusEvents(client, id, (e) => {
+    if (mode !== "edit" && e.status !== doc?.status) void r.reload();
+  });
 
   const edited = useMemo(() => (r.data && doc ? editedPaths(r.data, doc.fieldMeta) : new Set<string>()), [r.data, doc]);
   const checks = useMemo(
@@ -160,6 +167,7 @@ function Review() {
         {mode === "edit" && <CheckBar items={checks} current={current} onPick={pick} />}
         {mode !== "edit" && doc.riskFlags.length > 0 && <RiskReasons flags={doc.riskFlags} />}
         <ReviewForm data={r.data} meta={doc.fieldMeta} issues={r.issues} edited={edited} readOnly={mode !== "edit"} onChange={r.update} />
+        {showSyncPanel(doc) && <SyncPanel doc={doc} />}
         {mode !== "edit" && <EditHistory edits={doc.edits} />}
       </div>
       {mode === "edit" && (

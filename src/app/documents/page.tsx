@@ -193,6 +193,16 @@ function Documents() {
                           </Link>
                         </span>
                       )}
+                      {r.status === "SYNC_FAILED" && r.syncError && (
+                        <span data-testid="sync-error" className="inline-block max-w-[320px] truncate align-middle text-label text-risk" title={r.syncError}>
+                          {r.syncError}
+                        </span>
+                      )}
+                      {r.status === "SYNCED" && r.erpTransactionId && (
+                        <span data-testid="erp-ref" className="num text-label text-text-muted">
+                          ERP {r.erpTransactionId}
+                        </span>
+                      )}
                       {r.status === "FAILED" && canUpload && (
                         <Button className="!py-0.5" loading={retrying === r.id} onClick={() => retry(r.id, r.docNo)} icon={<RefreshCw aria-hidden className="size-4" />}>
                           อ่านใหม่

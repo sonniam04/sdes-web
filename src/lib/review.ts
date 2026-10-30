@@ -26,6 +26,21 @@ export type DocumentDetail = {
   verifiedById: string | null;
   edits: EditRecord[];
   history: { id: string; from: string | null; to: string; actor: { kind: string; name?: string | null }; reason: string | null; at: string }[];
+  erpTransactionId: string | null;
+  syncedAt: string | null;
+  syncError: string | null;
+  syncAttempts: SyncAttempt[];
+};
+
+export type SyncAttempt = {
+  attempt: number;
+  adapter: string;
+  status: "PENDING" | "SUCCESS" | "FAILED";
+  transactionId: string | null;
+  reused: boolean | null;
+  error: string | null;
+  requestedAt: string;
+  respondedAt: string | null;
 };
 
 /** ชื่อ field ภาษาไทยที่แสดงในรายการ "ต้องตรวจ" */

@@ -62,6 +62,10 @@ function detail(id: string, docNo: string, over: Partial<{ status: string; verif
     verifiedById: null as string | null,
     edits: [] as unknown[],
     history: [{ id: "1", from: null, to: "UPLOADED", actor: { kind: "user", name: "ผู้อัปโหลด" }, reason: null, at: "2026-10-29T03:00:00Z" }],
+    erpTransactionId: null,
+    syncedAt: null,
+    syncError: null,
+    syncAttempts: [] as unknown[],
     ...over,
   };
 }
