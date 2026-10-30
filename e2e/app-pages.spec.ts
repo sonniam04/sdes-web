@@ -89,7 +89,7 @@ test.describe("7.3 login และเปลี่ยนรหัสผ่าน�
     await page.getByLabel("อีเมล").fill("me@test.local");
     await page.getByLabel("รหัสผ่าน").fill("correct-password");
     await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
-    await expect(page).toHaveURL(/\/documents$/);
+    await expect(page).toHaveURL(/\/documents$/, { timeout: 30_000 }); // รอบแรกหลังล็อกอิน dev server ต้อง compile หน้าปลายทาง
     await expect(page.getByRole("heading", { name: "คิวเอกสาร" })).toBeVisible();
   });
 
@@ -110,7 +110,7 @@ test.describe("7.3 login และเปลี่ยนรหัสผ่าน�
     await page.getByLabel("อีเมล").fill("me@test.local");
     await page.getByLabel("รหัสผ่าน").fill("correct-password");
     await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
-    await expect(page).toHaveURL(/\/change-password$/);
+    await expect(page).toHaveURL(/\/change-password$/, { timeout: 30_000 }); // รอบแรกหลังล็อกอิน dev server ต้อง compile หน้าปลายทาง
     await expect(page.getByText("รหัสผ่านนี้เป็นรหัสชั่วคราว")).toBeVisible();
 
     // เข้าหน้าอื่นตรง ๆ ก็ถูกพากลับมา
