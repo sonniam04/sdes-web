@@ -11,6 +11,7 @@ export const MENU: readonly MenuItem[] = [
   { href: "/vendors", label: "ผู้ขาย", roles: ["AP_CLERK", "AP_LEAD"] },
   { href: "/reports", label: "รายงาน", roles: ["FINANCE_EXEC"] },
   { href: "/audit", label: "Audit trail", roles: ["FINANCE_EXEC", "SYS_ADMIN"] },
+  { href: "/admin/sync", label: "ติดตามการส่ง", roles: ["FINANCE_EXEC", "SYS_ADMIN"] },
   { href: "/admin/users", label: "ผู้ใช้", roles: ["SYS_ADMIN"] },
   { href: "/admin/erp", label: "ERP", roles: ["SYS_ADMIN"] },
   { href: "/admin/settings", label: "ตั้งค่า", roles: ["SYS_ADMIN"] },

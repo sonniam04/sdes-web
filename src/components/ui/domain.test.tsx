@@ -159,8 +159,8 @@ describe("AppShell", () => {
   const expected: Record<Role, string[]> = {
     AP_CLERK: ["/documents", "/vendors"],
     AP_LEAD: ["/documents", "/approvals", "/vendors"],
-    FINANCE_EXEC: ["/documents", "/reports", "/audit"],
-    SYS_ADMIN: ["/audit", "/admin/users", "/admin/erp", "/admin/settings"],
+    FINANCE_EXEC: ["/documents", "/reports", "/audit", "/admin/sync"],
+    SYS_ADMIN: ["/audit", "/admin/sync", "/admin/users", "/admin/erp", "/admin/settings"],
   };
 
   it.each(ROLES)("เมนูของ %s ตรงกับ permission matrix", (role) => {
@@ -180,6 +180,7 @@ describe("AppShell", () => {
       "/vendors",
       "/reports",
       "/audit",
+      "/admin/sync",
     ]);
   });
 
