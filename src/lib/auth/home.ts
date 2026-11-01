@@ -1,5 +1,7 @@
-/** หน้าแรกตาม role หลังล็อกอิน */
-export function homeFor(roles: readonly string[]) {
-  if (roles.some((r) => r === "AP_CLERK" || r === "AP_LEAD" || r === "FINANCE_EXEC")) return "/documents";
-  return "/admin/users";
+/**
+ * หน้าแรกหลังล็อกอิน: หน้าภาพรวมของทุก role (spec overview-dashboard)
+ * — เนื้อหาเปลี่ยนตามสิทธิ์ในหน้าเอง จึงไม่ต้องเลือกตาม role อีก
+ */
+export function homeFor(): string {
+  return "/";
 }

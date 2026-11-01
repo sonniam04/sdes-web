@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw, WifiOff } from "lucide-react";
 import { AppFrame } from "@/components/AppFrame";
 import { Button } from "@/components/ui/Button";
@@ -22,7 +23,9 @@ const EPOCH = new Date(0).toISOString();
 export default function DocumentsPage() {
   return (
     <AppFrame roles={["AP_CLERK", "AP_LEAD", "FINANCE_EXEC"]}>
-      <Documents />
+      <Suspense>
+        <Documents />
+      </Suspense>
     </AppFrame>
   );
 }
@@ -31,7 +34,14 @@ function Documents() {
   const { state, client } = useAuth();
   const toast = useToast();
   const { rows, error, live, reload, merge } = useDocumentQueue(client);
-  const [tab, setTab] = useState(QUEUE_TABS[0]!.key);
+  const router = useRouter();
+  // แท็บเริ่มจาก ?tab= (ลิงก์จากหน้าภาพรวม) — ค่าที่ไม่รู้จักใช้แท็บแรก
+  const requested = useSearchParams().get("tab");
+  const [tab, setTabState] = useState(QUEUE_TABS.find((t) => t.key === requested)?.key ?? QUEUE_TABS[0]!.key);
+  const setTab = (key: string) => {
+    setTabState(key);
+    router.replace(`/documents?tab=${key}`, { scroll: false });
+  };
   const [results, setResults] = useState<UploadResult[]>();
   const [uploading, setUploading] = useState(false);
   const [retrying, setRetrying] = useState<string>();

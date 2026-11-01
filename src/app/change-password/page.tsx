@@ -34,7 +34,7 @@ export default function ChangePasswordPage() {
     setError(undefined);
     try {
       const s = await client.changePassword(current, next);
-      router.replace(s ? homeFor(s.user.roles) : "/login");
+      router.replace(s ? homeFor() : "/login");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่อีกครั้ง");
     } finally {

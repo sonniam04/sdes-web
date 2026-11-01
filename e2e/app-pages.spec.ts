@@ -157,6 +157,17 @@ test.describe("7.4 หน้าเอกสาร (API จำลอง)", () => 
     await expect(page.getByText("ส่ง DOC-000102 ไปอ่านใหม่แล้ว", { exact: true })).toBeVisible();
   });
 
+  test("เปิดแท็บจาก ?tab= และเปลี่ยนแท็บแล้ว URL ตามไป (overview-dashboard task 3.2)", async ({ page }) => {
+    await mockBackend(page, { roles: ["AP_CLERK"], loggedIn: true });
+    await page.goto("/documents?tab=failed");
+    await expect(page.getByRole("tab", { name: /ล้มเหลว/ })).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator("tr[data-doc=DOC-000102]")).toBeVisible();
+    await page.getByRole("tab", { name: /รอตรวจ/ }).click();
+    await expect(page).toHaveURL(/\/documents\?tab=waiting$/);
+    await page.goto("/documents?tab=nope");
+    await expect(page.getByRole("tab", { name: /รอตรวจ/ })).toHaveAttribute("aria-selected", "true");
+  });
+
   test("Finance Exec ดูคิวได้ แต่ไม่มีพื้นที่อัปโหลดและไม่มีปุ่มอ่านใหม่", async ({ page }) => {
     await mockBackend(page, { roles: ["FINANCE_EXEC"], loggedIn: true });
     await page.goto("/documents");

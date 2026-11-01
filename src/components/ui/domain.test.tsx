@@ -157,10 +157,10 @@ describe("EmptyState / ErrorState / Skeleton", () => {
 
 describe("AppShell", () => {
   const expected: Record<Role, string[]> = {
-    AP_CLERK: ["/documents", "/vendors"],
-    AP_LEAD: ["/documents", "/approvals", "/vendors"],
-    FINANCE_EXEC: ["/documents", "/reports", "/audit", "/admin/sync"],
-    SYS_ADMIN: ["/audit", "/admin/sync", "/admin/logs", "/admin/users", "/admin/api-keys", "/admin/erp", "/admin/settings"],
+    AP_CLERK: ["/", "/documents", "/vendors"],
+    AP_LEAD: ["/", "/documents", "/approvals", "/vendors"],
+    FINANCE_EXEC: ["/", "/documents", "/reports", "/audit", "/admin/sync"],
+    SYS_ADMIN: ["/", "/audit", "/admin/sync", "/admin/logs", "/admin/users", "/admin/api-keys", "/admin/erp", "/admin/settings"],
   };
 
   it.each(ROLES)("เมนูของ %s ตรงกับ permission matrix", (role) => {
@@ -176,6 +176,7 @@ describe("AppShell", () => {
 
   it("หลาย role ได้เมนูรวม", () => {
     expect(menuFor(["AP_CLERK", "FINANCE_EXEC"]).map((m) => m.href)).toEqual([
+      "/",
       "/documents",
       "/vendors",
       "/reports",
@@ -191,5 +192,11 @@ describe("AppShell", () => {
   it("เมนูปัจจุบันมี aria-current", () => {
     render(<AppShell roles={["AP_CLERK"]} userName="ผู้ทดสอบ" currentPath="/documents/123/review">x</AppShell>);
     expect(screen.getByRole("link", { name: "คิวเอกสาร" })).toHaveAttribute("aria-current", "page");
+  });
+
+  it("เมนูภาพรวมเป็นรายการแรกและ active เฉพาะที่หน้า /", () => {
+    for (const role of ROLES) expect(menuFor([role])[0]).toMatchObject({ href: "/", label: "ภาพรวม" });
+    render(<AppShell roles={["AP_CLERK"]} userName="ผู้ทดสอบ" currentPath="/documents">x</AppShell>);
+    expect(screen.getByRole("link", { name: "ภาพรวม" })).not.toHaveAttribute("aria-current");
   });
 });

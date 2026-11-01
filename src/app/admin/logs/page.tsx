@@ -1,7 +1,8 @@
 "use client";
 
 // System logs: ค้น warning/error ของ api และ worker — อ่านอย่างเดียว (spec system-logs "Log viewer", design D7)
-import { Fragment, useCallback, useEffect, useState, type FormEvent } from "react";
+import { Fragment, Suspense, useCallback, useEffect, useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { AppFrame } from "@/components/AppFrame";
 import { Button } from "@/components/ui/Button";
@@ -39,15 +40,29 @@ const LEVEL = {
 export default function LogsPage() {
   return (
     <AppFrame roles={["SYS_ADMIN"]}>
-      <SystemLogs />
+      <Suspense>
+        <SystemLogs />
+      </Suspense>
     </AppFrame>
   );
 }
 
+/** ตัวกรองเริ่มต้นจาก URL เช่น /admin/logs?level=error จากหน้าภาพรวม — ค่าที่ไม่รู้จักถูกละไว้ */
+function filtersFrom(params: URLSearchParams): Filters {
+  const level = params.get("level");
+  const service = params.get("service");
+  return {
+    level: level && level in LEVEL ? level : undefined,
+    service: service === "api" || service === "worker" ? service : undefined,
+    q: params.get("q") ?? undefined,
+  };
+}
+
 function SystemLogs() {
   const { client } = useAuth();
-  const [draft, setDraft] = useState<Filters>({});
-  const [applied, setApplied] = useState<Filters>({});
+  const params = useSearchParams();
+  const [draft, setDraft] = useState<Filters>(() => filtersFrom(params));
+  const [applied, setApplied] = useState<Filters>(() => filtersFrom(params));
   const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
   const [page, setPage] = useState<Page>();
   const [error, setError] = useState<string>();

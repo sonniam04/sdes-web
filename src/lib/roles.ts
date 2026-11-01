@@ -6,6 +6,7 @@ export type Role = (typeof ROLES)[number];
 export type MenuItem = { href: string; label: string; roles: readonly Role[] };
 
 export const MENU: readonly MenuItem[] = [
+  { href: "/", label: "ภาพรวม", roles: ROLES },
   { href: "/documents", label: "คิวเอกสาร", roles: ["AP_CLERK", "AP_LEAD", "FINANCE_EXEC"] },
   { href: "/approvals", label: "รออนุมัติ", roles: ["AP_LEAD"] },
   { href: "/vendors", label: "ผู้ขาย", roles: ["AP_CLERK", "AP_LEAD"] },

@@ -38,6 +38,23 @@ async function mockBackend(page: Page, roles = ["SYS_ADMIN"]) {
 const results = (page: Page) => page.getByRole("region", { name: "ผลการค้นหา" });
 
 test.describe("5.2 System logs", () => {
+  test("ตัวกรองเริ่มต้นจาก URL เช่นลิงก์จากหน้าภาพรวม (overview-dashboard task 3.2)", async ({ page }) => {
+    const { calls } = await mockBackend(page);
+    await page.goto("/admin/logs?level=error&service=worker&q=DOC-000200");
+    await expect.poll(() => calls.find((c) => c.path === "/api/admin/system-logs")?.query).toMatchObject({ level: "error", service: "worker", q: "DOC-000200" });
+    await expect(page.getByLabel("คำในข้อความ")).toHaveValue("DOC-000200");
+    await expect(page.getByLabel("ระดับ")).toContainText("error");
+  });
+
+  test("ค่าจาก URL ที่ไม่รู้จักถูกละไว้", async ({ page }) => {
+    const { calls } = await mockBackend(page);
+    await page.goto("/admin/logs?level=debug&service=db");
+    await expect.poll(() => calls.find((c) => c.path === "/api/admin/system-logs")?.query).toBeTruthy();
+    const q = calls.find((c) => c.path === "/api/admin/system-logs")!.query;
+    expect(q.level).toBeUndefined();
+    expect(q.service).toBeUndefined();
+  });
+
   test("ตัวกรองเวลา ระดับ บริการ และข้อความถูกส่งไป API", async ({ page }) => {
     const { calls } = await mockBackend(page);
     await page.goto("/admin/logs");
