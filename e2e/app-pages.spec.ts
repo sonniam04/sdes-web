@@ -83,14 +83,24 @@ async function mockBackend(page: Page, opts: { roles: Role[]; mustChangePassword
 }
 
 test.describe("7.3 login และเปลี่ยนรหัสผ่านชั่วคราว", () => {
-  test("ล็อกอินสำเร็จ → ไปหน้าเอกสาร", async ({ page }) => {
-    await mockBackend(page, { roles: ["AP_CLERK"] });
+  test("ล็อกอินสำเร็จ → ไปหน้าภาพรวม (overview-dashboard task 3.1)", async ({ page }) => {
+    await mockBackend(page, { roles: ["SYS_ADMIN"] });
     await page.goto("/login");
     await page.getByLabel("อีเมล").fill("me@test.local");
     await page.getByLabel("รหัสผ่าน").fill("correct-password");
     await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
-    await expect(page).toHaveURL(/\/documents$/, { timeout: 30_000 }); // รอบแรกหลังล็อกอิน dev server ต้อง compile หน้าปลายทาง
-    await expect(page.getByRole("heading", { name: "คิวเอกสาร" })).toBeVisible();
+    await expect(page).toHaveURL(/:\d+\/$/, { timeout: 30_000 }); // รอบแรกหลังล็อกอิน dev server ต้อง compile หน้าปลายทาง
+    await expect(page.getByRole("heading", { name: "ภาพรวม", level: 1 })).toBeVisible();
+  });
+
+  test("ล็อกอินจากลิงก์ของหน้าอื่น → กลับไปหน้านั้น ไม่ใช่หน้าภาพรวม", async ({ page }) => {
+    await mockBackend(page, { roles: ["AP_CLERK"] });
+    await page.goto("/vendors");
+    await expect(page).toHaveURL(/\/login\?next=/, { timeout: 30_000 });
+    await page.getByLabel("อีเมล").fill("me@test.local");
+    await page.getByLabel("รหัสผ่าน").fill("correct-password");
+    await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+    await expect(page).toHaveURL(/\/vendors$/, { timeout: 30_000 });
   });
 
   test("รหัสผิด → ข้อความกลางและล้างช่องรหัสผ่าน", async ({ page }) => {
@@ -123,7 +133,7 @@ test.describe("7.3 login และเปลี่ยนรหัสผ่าน�
     await page.getByLabel("รหัสผ่านใหม่", { exact: true }).fill("a-new-long-password-2569");
     await page.getByLabel("ยืนยันรหัสผ่านใหม่").fill("a-new-long-password-2569");
     await page.getByRole("button", { name: "บันทึกรหัสผ่านใหม่" }).click();
-    await expect(page).toHaveURL(/\/documents$/);
+    await expect(page).toHaveURL(/:\d+\/$/);
   });
 
   test("ยังไม่ล็อกอิน → หน้าที่ต้องล็อกอินพาไป /login พร้อม next", async ({ page }) => {

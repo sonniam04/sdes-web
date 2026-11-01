@@ -70,3 +70,21 @@ export function formatSeconds(sec: number | null): string {
   if (min < 60) return `${min} นาที`;
   return `${Math.floor(min / 60)} ชม. ${min % 60} นาที`;
 }
+
+/** เวลาที่ผ่านไปจาก iso ถึง now (ใช้เวลาของ server เป็น now) → "5 นาที" / "3 ชั่วโมง" / "2 วัน" */
+export function formatAgo(iso: string, now: string): string {
+  const min = Math.floor((Date.parse(now) - Date.parse(iso)) / 60_000);
+  if (min < 1) return "ไม่ถึง 1 นาที";
+  if (min < 60) return `${min} นาที`;
+  const hours = Math.floor(min / 60);
+  if (hours < 24) return `${hours} ชั่วโมง`;
+  return `${Math.floor(hours / 24)} วัน`;
+}
+
+/** ผลต่างเป็นเปอร์เซ็นต์เทียบฐาน → "+10%" / "−10%" / "0%" — ฐานเป็น 0 คืน null */
+export function formatChange(current: string, base: string): string | null {
+  const b = Number(base);
+  if (b === 0) return null;
+  const pct = Math.round(((Number(current) - b) / b) * 100);
+  return pct > 0 ? `+${pct}%` : pct < 0 ? `${MINUS}${-pct}%` : "0%";
+}

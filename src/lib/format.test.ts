@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDateTime, formatMoney, formatSeconds, formatThaiDate, formatThaiMonth, parseAmountInput } from "./format";
+import { formatAgo, formatChange, formatDateTime, formatMoney, formatSeconds, formatThaiDate, formatThaiMonth, parseAmountInput } from "./format";
 
 describe("formatMoney", () => {
   it("ใส่ตัวคั่นหลักพันและทศนิยม 2 ตำแหน่ง", () => {
@@ -69,5 +69,29 @@ describe("formatSeconds", () => {
     expect(formatSeconds(240)).toBe("4 นาที");
     expect(formatSeconds(5430)).toBe("1 ชม. 31 นาที");
     expect(formatSeconds(null)).toBe("—");
+  });
+});
+
+describe("formatAgo", () => {
+  const now = "2026-11-01T12:00:00Z";
+  it.each([
+    ["2026-11-01T11:59:30Z", "ไม่ถึง 1 นาที"],
+    ["2026-11-01T11:55:00Z", "5 นาที"],
+    ["2026-11-01T09:00:00Z", "3 ชั่วโมง"],
+    ["2026-10-30T12:00:00Z", "2 วัน"],
+    ["2026-11-01T12:00:05Z", "ไม่ถึง 1 นาที"],
+  ])("%s → %s", (iso, out) => {
+    expect(formatAgo(iso, now)).toBe(out);
+  });
+});
+
+describe("formatChange", () => {
+  it("เทียบเป็นเปอร์เซ็นต์ปัดเศษ พร้อมเครื่องหมาย", () => {
+    expect(formatChange("1100.00", "1000.00")).toBe("+10%");
+    expect(formatChange("900.00", "1000.00")).toBe("−10%");
+    expect(formatChange("1000.00", "1000.00")).toBe("0%");
+  });
+  it("ฐานเป็น 0 → null (ไม่หารด้วยศูนย์)", () => {
+    expect(formatChange("500.00", "0.00")).toBeNull();
   });
 });
