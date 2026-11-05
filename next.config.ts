@@ -51,6 +51,8 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
   // ป้าย dev ของ Next บังแถบปุ่มล่างของหน้าทำงาน
   devIndicators: false,
+  // ไม่บอกชื่อ framework ใน header (X-Powered-By)
+  poweredByHeader: false,
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },
