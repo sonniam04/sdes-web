@@ -74,6 +74,16 @@ pnpm sync:core --check  # ตรวจว่าสำเนาตรงกับ
 
 `NEXT_PUBLIC_*` ถูกฝังตอน build — เปลี่ยนแล้วต้อง build ใหม่
 
+## Production
+
+`Dockerfile` สร้าง image แบบ Next.js standalone (alpine + node อย่างเดียว ไม่มี sharp/typescript):
+
+```bash
+docker build --build-arg NEXT_PUBLIC_SDES_WS_URL=https://<โดเมน> -t sdes-web .
+```
+
+ต้องระบุ `NEXT_PUBLIC_SDES_WS_URL` เป็นโดเมนจริง (ฝังทั้งในโค้ดฝั่ง browser และ CSP `connect-src`) — ปกติ build ผ่าน `docker-compose.prod.yml` ของ sdes-service ซึ่งส่ง `https://${SDES_DOMAIN}` ให้เอง และ Caddy ส่ง `/auth`, `/api`, `/ws` ไปที่ api โดยตรง (rewrite ของ Next ไม่ถูกใช้) — คู่มือเต็มอยู่ที่ `docs/deploy/` ของ repo วางแผน
+
 ## Security headers
 
 `next.config.ts` ตั้ง Content-Security-Policy และ header ความปลอดภัยให้ทุกหน้า: `connect-src` อนุญาตเฉพาะ origin ตัวเองกับ origin ของ `NEXT_PUBLIC_SDES_WS_URL` (socket.io), `worker-src 'self' blob:` สำหรับ PDF.js, `frame-ancestors 'none'`, `X-Content-Type-Options: nosniff` และ `Referrer-Policy` — ถ้าย้าย API ไป origin อื่น ต้องตั้ง `NEXT_PUBLIC_SDES_WS_URL` ตอน build ไม่อย่างนั้น browser จะบล็อกการเชื่อมต่อ real-time CI รัน `pnpm audit:gate` เหมือน sdes-service (รายการยกเว้นใน `security/audit-exceptions.json`)
