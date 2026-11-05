@@ -45,6 +45,10 @@ const nextConfig: NextConfig = {
   pageExtensions: isProd ? ["tsx", "ts"] : ["dev.tsx", "tsx", "ts"],
   // dev ใช้โฟลเดอร์แยก เพื่อให้ `next build` รันได้ระหว่างที่ dev server เปิดอยู่
   distDir: isProd ? ".next" : ".next-dev",
+  // image production คัดลอกเฉพาะ .next/standalone + static แล้วรัน server.js (design D3)
+  output: isProd ? "standalone" : undefined,
+  // ไม่ใช้ next/image (ไฟล์ต้นฉบับแสดงด้วย <img> จาก blob URL) — ปิด optimizer เพื่อไม่ต้องมี sharp ใน image
+  images: { unoptimized: true },
   // ป้าย dev ของ Next บังแถบปุ่มล่างของหน้าทำงาน
   devIndicators: false,
   async headers() {
