@@ -120,6 +120,29 @@ export class ApiClient {
     }
   }
 
+  /** โหลดไฟล์ (เช่น ต้นฉบับเอกสาร) พร้อม access token; ถ้า 401 จะ refresh แล้วลองใหม่หนึ่งครั้ง */
+  async requestBinary(path: string): Promise<{ data: ArrayBuffer; contentType: string; headers: Headers }> {
+    const get = async (token: string | null) => {
+      const res = await this.fetchImpl(`${this.apiBase}${path}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "same-origin",
+      });
+      if (!res.ok) {
+        const { message, code } = messageOf(safeJson(await res.text()));
+        throw new ApiError(res.status, message, code);
+      }
+      return { data: await res.arrayBuffer(), contentType: res.headers.get("Content-Type") ?? "", headers: res.headers };
+    };
+    try {
+      return await get(this.token);
+    } catch (e) {
+      if (!(e instanceof ApiError) || e.status !== 401) throw e;
+      const s = await this.refresh();
+      if (!s) throw e;
+      return get(s.accessToken);
+    }
+  }
+
   private async raw<T>(url: string, init: { method?: string; json?: unknown; body?: BodyInit }, token?: string | null): Promise<T> {
     const headers: Record<string, string> = {};
     if (token) headers.Authorization = `Bearer ${token}`;

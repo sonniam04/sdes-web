@@ -6,12 +6,17 @@ export type Role = (typeof ROLES)[number];
 export type MenuItem = { href: string; label: string; roles: readonly Role[] };
 
 export const MENU: readonly MenuItem[] = [
+  { href: "/", label: "ภาพรวม", roles: ROLES },
   { href: "/documents", label: "คิวเอกสาร", roles: ["AP_CLERK", "AP_LEAD", "FINANCE_EXEC"] },
   { href: "/approvals", label: "รออนุมัติ", roles: ["AP_LEAD"] },
   { href: "/vendors", label: "ผู้ขาย", roles: ["AP_CLERK", "AP_LEAD"] },
   { href: "/reports", label: "รายงาน", roles: ["FINANCE_EXEC"] },
   { href: "/audit", label: "Audit trail", roles: ["FINANCE_EXEC", "SYS_ADMIN"] },
+  { href: "/admin/sync", label: "ติดตามการส่ง", roles: ["FINANCE_EXEC", "SYS_ADMIN"] },
+  { href: "/admin/logs", label: "System logs", roles: ["SYS_ADMIN"] },
   { href: "/admin/users", label: "ผู้ใช้", roles: ["SYS_ADMIN"] },
+  { href: "/admin/api-keys", label: "API keys", roles: ["SYS_ADMIN"] },
+  { href: "/admin/erp", label: "ERP", roles: ["SYS_ADMIN"] },
   { href: "/admin/settings", label: "ตั้งค่า", roles: ["SYS_ADMIN"] },
 ];
 
@@ -21,6 +26,9 @@ export const ROLE_LABEL: Record<Role, string> = {
   FINANCE_EXEC: "ผู้บริหารฝ่ายการเงิน",
   SYS_ADMIN: "ผู้ดูแลระบบ",
 };
+
+/** role ที่เปิดหน้าเอกสารได้ (permission document.view) — SYS_ADMIN ไม่มี */
+export const canViewDocuments = (roles: readonly Role[]) => roles.some((r) => r !== "SYS_ADMIN");
 
 /** เมนูที่ผู้ใช้เห็น = รวมสิทธิ์ของทุก role ที่มี */
 export function menuFor(roles: readonly Role[]): MenuItem[] {

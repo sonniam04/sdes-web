@@ -1,19 +1,30 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { BBoxOverlay, type BBox } from "./BBoxOverlay";
 import { Button } from "./Button";
 import { ErrorState, Skeleton } from "./States";
+import { refineBBox, type PdfTextItem } from "@/lib/review";
 
 const BASE_WIDTH = 600; // ความกว้างหน้าที่ซูม 100% (px)
 const ZOOMS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
 type Status = "loading" | "ready" | "error";
 
+type Props = {
+  /** URL ของไฟล์ หรือ data ที่โหลดมาแล้ว (เช่น ผ่าน API ที่ต้องแนบ token) */
+  url?: string;
+  data?: ArrayBuffer;
+  activeBox?: BBox & { page?: number };
+  activeLabel?: string;
+  /** ค่าของ field — ใช้ปรับกรอบให้ตรงกับข้อความจริงในชั้นข้อความของ PDF (design D3) */
+  activeValue?: string | null;
+};
+
 /** แสดงหน้า PDF ด้วย PDF.js พร้อมกรอบ bbox ของ field ที่ focus อยู่ */
-export function PdfViewer({ url, activeBox, activeLabel }: { url: string; activeBox?: BBox & { page?: number }; activeLabel?: string }) {
+export function PdfViewer({ url, data, activeBox, activeLabel, activeValue }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
@@ -22,6 +33,7 @@ export function PdfViewer({ url, activeBox, activeLabel }: { url: string; active
   const [zoom, setZoom] = useState(1);
   const [size, setSize] = useState({ w: BASE_WIDTH, h: BASE_WIDTH * 1.414 });
   const [attempt, setAttempt] = useState(0);
+  const [text, setText] = useState<{ page: number; items: PdfTextItem[]; width: number; height: number }>();
 
   useEffect(() => {
     let cancelled = false;
@@ -30,7 +42,8 @@ export function PdfViewer({ url, activeBox, activeLabel }: { url: string; active
       try {
         const pdfjs = await import("pdfjs-dist");
         pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
-        const d = await pdfjs.getDocument(url).promise;
+        // PDF.js ย้าย buffer ไป worker จึงส่งสำเนา
+        const d = await pdfjs.getDocument(data ? { data: new Uint8Array(data.slice(0)) } : url!).promise;
         if (!cancelled) setDoc(d);
       } catch {
         if (!cancelled) setStatus("error");
@@ -39,7 +52,7 @@ export function PdfViewer({ url, activeBox, activeLabel }: { url: string; active
     return () => {
       cancelled = true;
     };
-  }, [url, attempt]);
+  }, [url, data, attempt]);
 
   useEffect(() => {
     if (!doc || !canvas.current) return;
@@ -59,9 +72,12 @@ export function PdfViewer({ url, activeBox, activeLabel }: { url: string; active
       const render = p.render({ canvasContext: c.getContext("2d")!, viewport });
       task = render;
       await render.promise;
+      const content = await p.getTextContent().catch(() => null);
       if (!cancelled) {
         setSize({ w, h });
         setStatus("ready");
+        if (content)
+          setText({ page, items: content.items.filter((i) => "str" in i) as PdfTextItem[], width: unscaled.width, height: unscaled.height });
       }
     })().catch(() => !cancelled && setStatus("error"));
     return () => {
@@ -77,6 +93,13 @@ export function PdfViewer({ url, activeBox, activeLabel }: { url: string; active
     const el = scroller.current.querySelector("[data-testid=bbox]");
     el?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
   }, [activeBox, page]);
+
+  // ภาพสแกนไม่มีชั้นข้อความ จะได้กรอบของ AI ตามเดิม
+  const shownBox = useMemo(() => {
+    if (!activeBox || !text || text.page !== page || (activeBox.page && activeBox.page !== page)) return activeBox;
+    const refined = refineBBox(text.items, activeValue, activeBox, { width: text.width, height: text.height });
+    return refined ? { ...refined, page: activeBox.page } : activeBox;
+  }, [activeBox, activeValue, text, page]);
 
   const zi = ZOOMS.indexOf(zoom);
   const pages = doc?.numPages ?? 1;
@@ -125,7 +148,7 @@ export function PdfViewer({ url, activeBox, activeLabel }: { url: string; active
               </div>
             )}
             <canvas ref={canvas} aria-label={`ภาพเอกสาร หน้า ${page}`} role="img" style={{ width: size.w, height: size.h }} />
-            {status === "ready" && (!activeBox?.page || activeBox.page === page) && <BBoxOverlay box={activeBox} label={activeLabel} />}
+            {status === "ready" && (!shownBox?.page || shownBox.page === page) && <BBoxOverlay box={shownBox} label={activeLabel} />}
           </div>
         )}
       </div>

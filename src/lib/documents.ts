@@ -14,6 +14,12 @@ export type DocumentRow = {
   invoiceNo: string | null;
   invoiceDate: string | null;
   grandTotal: string | null;
+  /** จำนวนรายการที่ต้องแก้ก่อนยืนยัน (ไม่มีในแถวที่มาจาก event real-time จนกว่าจะโหลดใหม่) */
+  issueCount?: number;
+  /** เลขอ้างอิงใน ERP เมื่อส่งสำเร็จ */
+  erpTransactionId?: string | null;
+  /** เหตุผลล่าสุดที่ส่งไม่สำเร็จ (มีเฉพาะ SYNC_FAILED) */
+  syncError?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -35,6 +41,9 @@ export const QUEUE_TABS: { key: string; label: string; statuses: DocumentStatus[
 
 const WS_URL = process.env.NEXT_PUBLIC_SDES_WS_URL ?? "http://127.0.0.1:3000";
 
+/** สถานะที่ event อย่างเดียวไม่พอ ต้องโหลดแถวใหม่ */
+const RELOAD_ON = new Set<DocumentStatus>(["EXTRACTED", "SYNCED", "SYNC_FAILED"]);
+
 export type MergeOptions = {
   /** เพิ่มเฉพาะแถวที่ยังไม่มี — ใช้กับผลอัปโหลด ซึ่งอาจมาถึงหลัง event real-time ของเอกสารเดียวกัน */
   insertOnly?: boolean;
@@ -52,7 +61,12 @@ export function mergeRows(prev: DocumentRow[], incoming: DocumentRow[], opts: Me
     const cur = map.get(r.id);
     if (cur && opts.insertOnly) continue;
     if (cur && opts.ifUpdatedAt !== undefined && cur.updatedAt !== opts.ifUpdatedAt) continue;
-    if (cur && cur.updatedAt > r.updatedAt) continue;
+    if (cur && cur.updatedAt > r.updatedAt) {
+      // event มาถึงก่อนผลโหลด และเวลาของ event ช้ากว่า updatedAt ใน DB เล็กน้อย (ส่งหลัง commit)
+      // สถานะเท่ากัน = ข้อมูลเดียวกัน → รับรายละเอียด (ผู้ขาย ยอดรวม จำนวนจุดที่ต้องแก้) แต่คงเวลาที่ใหม่กว่า
+      if (cur.status === r.status) map.set(r.id, { ...cur, ...r, updatedAt: cur.updatedAt });
+      continue;
+    }
     map.set(r.id, { ...cur, ...r });
   }
   return [...map.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -121,6 +135,12 @@ export function useDocumentQueue(client: ApiClient) {
         void load(lastSync.current); // เอกสารที่ยังไม่อยู่ในคิว (อัปโหลดจากที่อื่น หรือ response อัปโหลดยังมาไม่ถึง)
         return prev;
       });
+      // event มีแค่สถานะ — ดึงแถวนั้นใหม่เพื่อได้รายละเอียด (อ่านเสร็จ: ผู้ขาย ยอดรวม จุดที่ต้องแก้; ส่ง ERP: เลขอ้างอิง เหตุผล)
+      // ใช้เวลาก่อน event เล็กน้อย เพราะผลโหลดรอบก่อนอาจเลื่อนจุด resync ไปหลังเวลาที่เอกสารเปลี่ยน
+      if (RELOAD_ON.has(e.status)) {
+        const before = new Date(new Date(e.at).getTime() - 5_000).toISOString();
+        void load(lastSync.current && lastSync.current < before ? lastSync.current : before);
+      }
     });
     return () => {
       socket.disconnect();
@@ -128,4 +148,23 @@ export function useDocumentQueue(client: ApiClient) {
   }, [client, client.accessToken, load]);
 
   return { rows, error, live, reload: () => load(), merge };
+}
+
+/** ฟังการเปลี่ยนสถานะของเอกสารฉบับเดียว (หน้ารายละเอียด) */
+export function useDocumentStatusEvents(client: ApiClient, id: string, onChange: (e: StatusEvent) => void) {
+  const handler = useRef(onChange);
+  useEffect(() => {
+    handler.current = onChange;
+  });
+  useEffect(() => {
+    const token = client.accessToken;
+    if (!token) return;
+    const socket: Socket = io(WS_URL, { path: "/ws", auth: { token }, transports: ["websocket"], reconnectionDelayMax: 5000 });
+    socket.on("document.status", (e: StatusEvent) => {
+      if (e.id === id) handler.current(e);
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, [client, client.accessToken, id]);
 }

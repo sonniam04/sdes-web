@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw, WifiOff } from "lucide-react";
 import { AppFrame } from "@/components/AppFrame";
 import { Button } from "@/components/ui/Button";
@@ -14,12 +16,16 @@ import { QUEUE_TABS, useDocumentQueue, type UploadApiResult } from "@/lib/docume
 import { formatMoney, formatThaiDate } from "@/lib/format";
 
 const CAN_UPLOAD = ["AP_CLERK", "AP_LEAD"] as const;
+/** สถานะที่มีข้อมูลให้เปิดดู (อ่านแล้ว) */
+const OPENABLE = new Set(["EXTRACTED", "VERIFIED", "PENDING_APPROVAL", "APPROVED", "REJECTED", "SYNCING", "SYNCED", "SYNC_FAILED"]);
 const EPOCH = new Date(0).toISOString();
 
 export default function DocumentsPage() {
   return (
     <AppFrame roles={["AP_CLERK", "AP_LEAD", "FINANCE_EXEC"]}>
-      <Documents />
+      <Suspense>
+        <Documents />
+      </Suspense>
     </AppFrame>
   );
 }
@@ -28,7 +34,14 @@ function Documents() {
   const { state, client } = useAuth();
   const toast = useToast();
   const { rows, error, live, reload, merge } = useDocumentQueue(client);
-  const [tab, setTab] = useState(QUEUE_TABS[0]!.key);
+  const router = useRouter();
+  // แท็บเริ่มจาก ?tab= (ลิงก์จากหน้าภาพรวม) — ค่าที่ไม่รู้จักใช้แท็บแรก
+  const requested = useSearchParams().get("tab");
+  const [tab, setTabState] = useState(QUEUE_TABS.find((t) => t.key === requested)?.key ?? QUEUE_TABS[0]!.key);
+  const setTab = (key: string) => {
+    setTabState(key);
+    router.replace(`/documents?tab=${key}`, { scroll: false });
+  };
   const [results, setResults] = useState<UploadResult[]>();
   const [uploading, setUploading] = useState(false);
   const [retrying, setRetrying] = useState<string>();
@@ -159,7 +172,15 @@ function Documents() {
               <tbody>
                 {visible.map((r) => (
                   <tr key={r.id} data-doc={r.docNo} className="h-[var(--row-height)] border-b border-rule-soft">
-                    <td className="num px-2.5 text-left font-semibold">{r.docNo}</td>
+                    <td className="num px-2.5 text-left font-semibold">
+                      {OPENABLE.has(r.status) ? (
+                        <Link href={`/documents/${r.id}`} className="underline underline-offset-[3px] hover:text-action">
+                          {r.docNo}
+                        </Link>
+                      ) : (
+                        r.docNo
+                      )}
+                    </td>
                     <td className="max-w-[280px] truncate px-2.5" title={r.vendorName ?? r.fileName}>
                       {r.vendorName ?? <span className="text-text-muted">{r.fileName}</span>}
                     </td>
@@ -170,6 +191,28 @@ function Documents() {
                       <StatusBadge status={r.status} />
                     </td>
                     <td className="px-2.5 text-right">
+                      {r.status === "EXTRACTED" && (
+                        <span className="inline-flex items-center gap-2">
+                          {(r.issueCount ?? 0) > 0 && (
+                            <span data-testid="issue-count" className="num text-label font-semibold text-risk">
+                              ต้องแก้ {r.issueCount}
+                            </span>
+                          )}
+                          <Link href={`/documents/${r.id}`} className="inline-flex min-h-8 items-center border border-rule-strong px-3 text-small font-semibold hover:bg-surface-sunken">
+                            {canUpload ? "ตรวจ" : "ดู"}
+                          </Link>
+                        </span>
+                      )}
+                      {r.status === "SYNC_FAILED" && r.syncError && (
+                        <span data-testid="sync-error" className="inline-block max-w-[320px] truncate align-middle text-label text-risk" title={r.syncError}>
+                          {r.syncError}
+                        </span>
+                      )}
+                      {r.status === "SYNCED" && r.erpTransactionId && (
+                        <span data-testid="erp-ref" className="num text-label text-text-muted">
+                          ERP {r.erpTransactionId}
+                        </span>
+                      )}
                       {r.status === "FAILED" && canUpload && (
                         <Button className="!py-0.5" loading={retrying === r.id} onClick={() => retry(r.id, r.docNo)} icon={<RefreshCw aria-hidden className="size-4" />}>
                           อ่านใหม่

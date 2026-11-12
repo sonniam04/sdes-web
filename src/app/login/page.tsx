@@ -21,7 +21,7 @@ function LoginForm() {
 
   useEffect(() => {
     if (state.status !== "authenticated") return;
-    router.replace(state.user.mustChangePassword ? "/change-password" : (next ?? homeFor(state.user.roles)));
+    router.replace(state.user.mustChangePassword ? "/change-password" : (next ?? homeFor()));
   }, [state, router, next]);
 
   async function submit(e: FormEvent) {

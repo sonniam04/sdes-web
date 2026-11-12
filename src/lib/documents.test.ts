@@ -29,6 +29,13 @@ describe("mergeRows", () => {
     expect(out[0]!.status).toBe("EXTRACTED");
   });
 
+  it("ผลโหลดที่สถานะเท่ากันแต่ updatedAt เก่ากว่าเวลา event: รับรายละเอียดและคงเวลาที่ใหม่กว่า", () => {
+    const prev = [row("a", "EXTRACTED", "2026-10-29T01:00:02.050Z")];
+    const fresh = { ...row("a", "EXTRACTED", "2026-10-29T01:00:02.000Z"), vendorName: "บริษัท ก", issueCount: 1 };
+    const out = mergeRows(prev, [fresh]);
+    expect(out[0]).toMatchObject({ vendorName: "บริษัท ก", issueCount: 1, updatedAt: "2026-10-29T01:00:02.050Z" });
+  });
+
   it("insertOnly: ผลอัปโหลดที่มาช้ากว่า event real-time ไม่ย้อนสถานะกลับ", () => {
     const prev = [row("a", "EXTRACTED", "2026-10-29T01:00:01Z")];
     const out = mergeRows(prev, [row("a", "UPLOADED", "2026-10-29T01:00:02Z"), row("b", "UPLOADED", "x")], { insertOnly: true });

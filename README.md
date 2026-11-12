@@ -23,6 +23,46 @@ pnpm dev --port 3100
 
 หน้าตัวอย่างสำหรับนักพัฒนา (มีเฉพาะตอน `pnpm dev`): `/dev/components`, `/dev/tokens`, `/dev/review`
 
+## หน้าหลักของระบบ
+
+| หน้า | ใครใช้ | ทำอะไร |
+|---|---|---|
+| `/` (ภาพรวม) | ทุก role (หน้าแรกหลังล็อกอิน) | งานค้าง 5 กลุ่มพร้อมอายุของงานที่รอนานสุด (กดไปแท็บในคิว), ปริมาณงาน 14 วัน, ตัวชี้วัดตาม BRD 7 วัน — Clerk/Lead/Exec; การเงินเดือนนี้ — Exec; สุขภาพระบบ — Admin/Exec (error 24 ชั่วโมงและ API key ใกล้หมดอายุเฉพาะ Admin) แต่ละส่วนแสดงตามที่ API ส่งมาตามสิทธิ์ รีเฟรชทุก 30 วินาที หยุดเมื่อแท็บถูกซ่อน และคงข้อมูลเดิมเมื่อดึงไม่สำเร็จ |
+| `/documents` | Clerk, Lead, Exec | อัปโหลด, คิวพร้อมสถานะ real-time, จำนวนจุดที่ต้องแก้, ปุ่ม "ตรวจ"; เปิดแท็บได้จาก `?tab=waiting\|approval\|progress\|failed\|done` |
+| `/documents/[id]` | Clerk, Lead, Exec | หน้าตรวจสองฝั่ง — ดูรายละเอียดด้านล่าง |
+| `/approvals` | AP Lead | คิวรออนุมัติพร้อมเหตุผลความเสี่ยง |
+| `/admin/users`, `/admin/settings` | System Admin | จัดการผู้ใช้, เกณฑ์ความเสี่ยงและ Tax ID บริษัท |
+| `/admin/erp` | System Admin | ตั้งค่าการเชื่อมต่อ ERP (Odoo หรือ webhook), ทดสอบแสดงผลรายข้อ, สวิตช์ส่งอัตโนมัติ (เปิดได้หลังทดสอบผ่าน) |
+| `/admin/sync` | System Admin, Exec | ภาพรวมคิวและการส่ง ERP (รีเฟรชทุก 30 วินาที), รายการ `SYNC_FAILED` — Admin เลือกหลายรายการแล้วส่งใหม่ได้, Exec อ่านอย่างเดียว |
+| `/audit` | System Admin, Exec | ค้นหา audit trail ตามช่วงเวลา ผู้กระทำ ประเภท และเลขเอกสาร พร้อมค่าก่อน/หลัง และส่งออก CSV (UTF-8 + BOM เปิดใน Excel ได้) |
+| `/admin/api-keys` | System Admin | สร้าง API key ให้ระบบภายนอก (แสดงค่าครั้งเดียว ปิดกล่องได้หลังยืนยันว่าเก็บแล้ว), ดูขอบเขต วันหมดอายุ และเวลาใช้ล่าสุด, เพิกถอนผ่านกล่องยืนยัน |
+| `/admin/logs` | System Admin | ค้น warning/error ของ api และ worker ย้อนหลัง 30 วัน ตามช่วงเวลา ระดับ บริการ และข้อความ กดแถวเพื่อดูรายละเอียด; ตัวกรองเริ่มต้นจาก URL ได้ (`?level=error&service=worker&q=...`) |
+| `/vendors`, `/vendors/[id]` | Clerk, Lead | ทะเบียนผู้ขาย: ค้นด้วยชื่อหรือ Tax ID, จำนวนเอกสาร ยอดรวม คู่ค้าใน ERP และป้าย "ผู้ขายรายใหม่"; หน้ารายละเอียดแสดงเอกสารของผู้ขาย (อ่านอย่างเดียว) |
+| `/reports` | Exec | รายงานตามช่วงเดือน (ไม่เกิน 24 เดือน): ยอดซื้อ ภาษีซื้อ หัก ณ ที่จ่ายรายเดือนพร้อมแท่งเปรียบเทียบ, ผู้ขายยอดสูงสุด 10 อันดับ, ตัวชี้วัดกระบวนการ และส่งออก CSV |
+
+เมนูแสดงตาม role ใน `src/lib/roles.ts` (สำเนาของ permission matrix ใช้ซ่อนเมนูเท่านั้น — การบังคับสิทธิ์อยู่ที่ API) System Admin ไม่มีสิทธิ์เปิดเอกสาร จึงเห็นเลขเอกสารในหน้าติดตามและ audit แบบไม่มีลิงก์
+
+### หน้าตรวจเอกสาร (`/documents/[id]`)
+
+- **ซ้าย:** ไฟล์ต้นฉบับ โหลดผ่าน `GET /api/documents/:id/file/content` พร้อม token — PDF แสดงด้วย PDF.js (`pdfjs-dist`, worker โหลดแบบ dynamic import เฉพาะหน้านี้) ส่วน JPG/PNG/TIFF แสดงเป็นภาพทีละหน้า (TIFF แปลงเป็น PNG ที่ API)
+- **กรอบไฮไลต์:** ใช้พิกัดสัดส่วนของหน้าจาก `field_meta` ถ้า PDF มีชั้นข้อความ จะหาข้อความที่ตรงกับค่าใกล้กรอบของ AI แล้วใช้ตำแหน่งนั้นแทน (`refineBBox` ใน `src/lib/review.ts`)
+- **ขวา:** ฟอร์ม 4 หมวด, แถบ "ต้องตรวจ" (คลิกเพื่อไปที่ช่อง, `J`/`K` เมื่อไม่ได้พิมพ์อยู่ หรือ `Alt+J`/`Alt+K` ได้ทุกที่), ผลรวมรายการตรึงไว้ล่างฟอร์ม
+- **ผลตรวจสด:** ใช้กฎชุดเดียวกับ server จาก `src/lib/core` (คัดลอกจาก sdes-service — ดูหัวข้อถัดไป) ส่วนกฎที่ต้องใช้ข้อมูลฝั่ง server (Tax ID บริษัท, เลขที่ซ้ำ) ใช้ผลจากการบันทึกล่าสุด
+- **บันทึกอัตโนมัติ:** 800 ms หลังพิมพ์ ส่ง `PATCH /api/documents/:id/data` พร้อม `version` ถ้ามีคนแก้ไปก่อน (409) จะแสดงค่าล่าสุดให้แก้ต่อ
+- **ยืนยัน:** `Ctrl+Enter` — ถ้ายังมีจุดที่ต้องแก้จะพาไปที่ช่องนั้นแทน ยืนยันแล้วเปิดเอกสารรอตรวจฉบับถัดไปพร้อม toast ที่มีปุ่ม "กลับไปดู"
+- **โหมดอนุมัติ** (เอกสาร `PENDING_APPROVAL` + AP Lead): ฟอร์มอ่านอย่างเดียว, เหตุผลความเสี่ยง, ประวัติการแก้ (ค่า AI/ก่อน/หลัง/ผู้แก้), อนุมัติหรือปฏิเสธผ่านกล่องยืนยัน ผู้ที่ยืนยันหรือแก้เอกสารเองจะเห็นเหตุผลว่าอนุมัติไม่ได้
+- จอแคบกว่า 1280 px สลับเป็นแท็บ "เอกสาร / ข้อมูล" เริ่มที่ข้อมูล และกดรายการ "ต้องตรวจ" แล้วสลับไปดูตำแหน่งในเอกสาร
+- **การส่งเข้า ERP:** เมื่อเอกสารเข้าสู่การส่งแล้ว มีกล่องแสดงเลขอ้างอิง ERP และเวลา, เหตุผลล่าสุดเมื่อ `SYNC_FAILED` และประวัติการส่งทุกครั้ง อัปเดตตาม event real-time ไม่มีปุ่มส่งใหม่ในหน้านี้ (ส่งใหม่ได้เฉพาะ Admin ที่ `/admin/sync`)
+
+## กติกากลางที่คัดลอกจาก sdes-service
+
+`src/lib/core/` (ผลการอ่าน, Tax ID, กฎตรวจยอด, ความเสี่ยง, ความมั่นใจ) สร้างจาก `Service/packages/core/src` พร้อม test ของมัน **ห้ามแก้ในเว็บ** ให้แก้ที่ sdes-service แล้วรัน:
+
+```bash
+pnpm sync:core          # คัดลอกใหม่ (ต้องมีโฟลเดอร์ Service อยู่ข้างกัน)
+pnpm sync:core --check  # ตรวจว่าสำเนาตรงกับต้นฉบับ — ไม่ตรงจะออกด้วยรหัส 1
+```
+
 ## Environment
 
 ไม่ต้องตั้งค่าอะไรถ้า API อยู่ที่ `127.0.0.1:3000` ถ้าไม่ใช่ ให้สร้าง `.env.local`:
@@ -33,6 +73,20 @@ pnpm dev --port 3100
 | `NEXT_PUBLIC_SDES_WS_URL` | `http://127.0.0.1:3000` | ที่อยู่ socket.io ที่ browser ต่อเพื่อรับสถานะเอกสาร |
 
 `NEXT_PUBLIC_*` ถูกฝังตอน build — เปลี่ยนแล้วต้อง build ใหม่
+
+## Production
+
+`Dockerfile` สร้าง image แบบ Next.js standalone (alpine + node อย่างเดียว ไม่มี sharp/typescript):
+
+```bash
+docker build --build-arg NEXT_PUBLIC_SDES_WS_URL=https://<โดเมน> -t sdes-web .
+```
+
+ต้องระบุ `NEXT_PUBLIC_SDES_WS_URL` เป็นโดเมนจริง (ฝังทั้งในโค้ดฝั่ง browser และ CSP `connect-src`) — ปกติ build ผ่าน `docker-compose.prod.yml` ของ sdes-service ซึ่งส่ง `https://${SDES_DOMAIN}` ให้เอง และ Caddy ส่ง `/auth`, `/api`, `/ws` ไปที่ api โดยตรง (rewrite ของ Next ไม่ถูกใช้) — คู่มือเต็มอยู่ที่ `docs/deploy/` ของ repo วางแผน
+
+## Security headers
+
+`next.config.ts` ตั้ง Content-Security-Policy และ header ความปลอดภัยให้ทุกหน้า: `connect-src` อนุญาตเฉพาะ origin ตัวเองกับ origin ของ `NEXT_PUBLIC_SDES_WS_URL` (socket.io), `worker-src 'self' blob:` สำหรับ PDF.js, `frame-ancestors 'none'`, `X-Content-Type-Options: nosniff` และ `Referrer-Policy` — ถ้าย้าย API ไป origin อื่น ต้องตั้ง `NEXT_PUBLIC_SDES_WS_URL` ตอน build ไม่อย่างนั้น browser จะบล็อกการเชื่อมต่อ real-time CI รัน `pnpm audit:gate` เหมือน sdes-service (รายการยกเว้นใน `security/audit-exceptions.json`)
 
 ## ทดสอบ
 

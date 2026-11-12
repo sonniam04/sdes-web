@@ -22,7 +22,7 @@ export function AppShell({
   const items = menuFor(roles);
   return (
     <div className={`flex flex-col ${fullHeight ? "min-h-screen" : ""}`}>
-      <nav aria-label="เมนูหลัก" className="flex h-12 items-center gap-1 bg-shell px-5 text-text-on-shell">
+      <nav aria-label="เมนูหลัก" className="flex h-12 items-center gap-1 overflow-x-auto bg-shell px-5 text-text-on-shell">
         <span className="mr-5 text-title font-bold tracking-[0.06em]">{th.app.name}</span>
         {items.map((m) => {
           const active = currentPath === m.href || currentPath.startsWith(`${m.href}/`);
@@ -31,7 +31,7 @@ export function AppShell({
               key={m.href}
               href={m.href}
               aria-current={active ? "page" : undefined}
-              className={`flex h-12 items-center gap-1.5 px-3 ${active ? "text-text-on-shell shadow-[inset_0_-3px_0_var(--color-text-on-shell)]" : "text-text-on-shell-muted hover:text-text-on-shell"}`}
+              className={`flex h-12 shrink-0 items-center gap-1.5 whitespace-nowrap px-3 ${active ? "text-text-on-shell shadow-[inset_0_-3px_0_var(--color-text-on-shell)]" : "text-text-on-shell-muted hover:text-text-on-shell"}`}
             >
               {m.label}
               {counts[m.href] ? (

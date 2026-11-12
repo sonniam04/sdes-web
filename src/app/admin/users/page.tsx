@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
 import { KeyRound, UserPlus } from "lucide-react";
 import { AppFrame } from "@/components/AppFrame";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { Panel } from "@/components/ui/Panel";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/States";
 import { TextField } from "@/components/ui/TextField";
 import { useToast } from "@/components/ui/Toast";
@@ -41,23 +41,6 @@ function RoleChecks({ value, onChange, idPrefix }: { value: Role[]; onChange: (r
       ))}
       {value.length === 0 && <span className="text-label text-risk">ต้องเลือกอย่างน้อยหนึ่ง role</span>}
     </fieldset>
-  );
-}
-
-function Panel({ open, onOpenChange, title, children }: { open: boolean; onOpenChange: (o: boolean) => void; title: string; children: React.ReactNode }) {
-  return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-[rgb(27_43_75/0.35)]" />
-        <Dialog.Content
-          aria-describedby={undefined}
-          className="fixed top-1/2 left-1/2 z-50 w-[min(460px,calc(100vw-32px))] -translate-x-1/2 -translate-y-1/2 border-[1.5px] border-rule-strong bg-surface font-sans text-text"
-        >
-          <Dialog.Title className="border-b border-rule-strong bg-surface-sunken px-4 py-2 text-title font-bold">{title}</Dialog.Title>
-          <div className="p-4">{children}</div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
   );
 }
 

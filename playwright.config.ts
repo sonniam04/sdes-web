@@ -3,6 +3,8 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   timeout: 60_000,
+  // dev server compile หน้าครั้งแรกระหว่างรัน — 5 วินาทีของค่าเริ่มต้นไม่พอบนเครื่องที่โหลดหนัก (assertion ที่ผ่านแล้วไม่ช้าลง)
+  expect: { timeout: 15_000 },
   use: {
     baseURL: "http://localhost:3100",
     // ใช้ Edge/Chrome ที่ติดตั้งในเครื่อง; บน CI ตั้ง PW_CHANNEL=chromium

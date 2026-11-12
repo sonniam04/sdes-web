@@ -46,3 +46,45 @@ export function formatThaiDate(iso: string): string {
   const get = (t: string) => parts.find((p) => p.type === t)!.value;
   return `${get("day")}/${get("month")}/${Number(get("year")) + 543}`;
 }
+
+const bangkokTime = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+
+/** ISO timestamp → "29/10/2569 14:05" (เวลาไทย) */
+export function formatDateTime(iso: string): string {
+  return `${formatThaiDate(iso)} ${bangkokTime.format(new Date(iso))}`;
+}
+
+const THAI_MONTHS = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+/** "2026-10" → "ต.ค. 2569" */
+export function formatThaiMonth(ym: string): string {
+  const [y, m] = ym.split("-");
+  return `${THAI_MONTHS[Number(m) - 1]} ${Number(y) + 543}`;
+}
+
+/** วินาที → "18 วินาที" / "4 นาที" / "1 ชม. 31 นาที" */
+export function formatSeconds(sec: number | null): string {
+  if (sec === null) return "—";
+  if (sec < 60) return `${Math.round(sec)} วินาที`;
+  const min = Math.round(sec / 60);
+  if (min < 60) return `${min} นาที`;
+  return `${Math.floor(min / 60)} ชม. ${min % 60} นาที`;
+}
+
+/** เวลาที่ผ่านไปจาก iso ถึง now (ใช้เวลาของ server เป็น now) → "5 นาที" / "3 ชั่วโมง" / "2 วัน" */
+export function formatAgo(iso: string, now: string): string {
+  const min = Math.floor((Date.parse(now) - Date.parse(iso)) / 60_000);
+  if (min < 1) return "ไม่ถึง 1 นาที";
+  if (min < 60) return `${min} นาที`;
+  const hours = Math.floor(min / 60);
+  if (hours < 24) return `${hours} ชั่วโมง`;
+  return `${Math.floor(hours / 24)} วัน`;
+}
+
+/** ผลต่างเป็นเปอร์เซ็นต์เทียบฐาน → "+10%" / "−10%" / "0%" — ฐานเป็น 0 คืน null */
+export function formatChange(current: string, base: string): string | null {
+  const b = Number(base);
+  if (b === 0) return null;
+  const pct = Math.round(((Number(current) - b) / b) * 100);
+  return pct > 0 ? `+${pct}%` : pct < 0 ? `${MINUS}${-pct}%` : "0%";
+}
