@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/Toast";
 import { ApiError } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { QUEUE_TABS, useDocumentQueue, type UploadApiResult } from "@/lib/documents";
-import { formatMoney, formatThaiDate } from "@/lib/format";
+import { formatDateTime, formatMoney, formatThaiDate } from "@/lib/format";
 
 const CAN_UPLOAD = ["AP_CLERK", "AP_LEAD"] as const;
 /** สถานะที่มีข้อมูลให้เปิดดู (อ่านแล้ว) */
@@ -162,7 +162,7 @@ function Documents() {
             <table className="w-full border-collapse text-body">
               <thead>
                 <tr>
-                  {["เลขที่", "ไฟล์ / ผู้ขาย", "เลขใบกำกับ", "วันที่ใบกำกับ", "ยอดรวม (บาท)", "สถานะ", ""].map((h, i) => (
+                  {["เลขที่", "ไฟล์ / ผู้ขาย", "เลขใบกำกับ", "วันที่ใบกำกับ", "ยอดรวม (บาท)", "อัปโหลด", "อัปเดตล่าสุด", "สถานะ", ""].map((h, i) => (
                     <th key={i} scope="col" className={`sticky top-0 border-b border-rule bg-surface-sunken px-2.5 py-1.5 text-label font-semibold text-text-muted ${i === 4 ? "text-right" : "text-left"}`}>
                       {h}
                     </th>
@@ -187,6 +187,13 @@ function Documents() {
                     <td className="px-2.5">{r.invoiceNo ?? "—"}</td>
                     <td className="px-2.5">{r.invoiceDate ? formatThaiDate(r.invoiceDate.slice(0, 10)) : "—"}</td>
                     <td className="num px-2.5">{r.grandTotal ? formatMoney(r.grandTotal) : "—"}</td>
+                    <td data-testid="created-at" className="num whitespace-nowrap px-2.5 !text-left text-small text-text-muted">
+                      {formatDateTime(r.createdAt)}
+                    </td>
+                    {/* แถวที่เพิ่งอัปโหลดยังไม่มีเวลาของ server (EPOCH) จนกว่า event/ผลโหลดจะมาแทน */}
+                    <td data-testid="updated-at" className="num whitespace-nowrap px-2.5 !text-left text-small text-text-muted">
+                      {r.updatedAt === EPOCH ? "—" : formatDateTime(r.updatedAt)}
+                    </td>
                     <td className="px-2.5">
                       <StatusBadge status={r.status} />
                     </td>
