@@ -69,6 +69,23 @@ test.describe("6.4 สถานะการส่ง ERP", () => {
     await expect(page.locator('[data-doc="DOC-000302"]').getByTestId("erp-ref")).toHaveText("ERP 1532");
   });
 
+  test("คิวเอกสาร: แต่ละแถวแสดงวันเวลาที่อัปโหลดและที่อัปเดตล่าสุด (เวลาไทย)", async ({ page }) => {
+    await mockBackend(page, ["AP_CLERK"]);
+    await page.goto("/documents");
+    await page.getByRole("tab", { name: /เสร็จแล้ว/ }).click();
+    await expect(page.getByRole("columnheader", { name: "อัปโหลด" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "อัปเดตล่าสุด" })).toBeVisible();
+    const r = page.locator('[data-doc="DOC-000302"]');
+    await expect(r.getByTestId("created-at")).toHaveText("29/10/2569 10:00");
+    await expect(r.getByTestId("updated-at")).toHaveText("29/10/2569 11:00");
+    // ข้อความในเซลล์ชิดซ้ายตรงกับหัวคอลัมน์ (ไม่ใช่ชิดขวาแบบยอดเงิน)
+    for (const [name, id] of [["อัปโหลด", "created-at"], ["อัปเดตล่าสุด", "updated-at"]] as const) {
+      const align = await r.getByTestId(id).evaluate((el) => getComputedStyle(el).textAlign);
+      const headAlign = await page.getByRole("columnheader", { name }).evaluate((el) => getComputedStyle(el).textAlign);
+      expect(align).toBe(headAlign);
+    }
+  });
+
   test("Clerk เปิดเอกสาร SYNC_FAILED เห็นเหตุผลล่าสุดและประวัติการส่ง แต่ไม่มีปุ่มส่งใหม่", async ({ page }) => {
     await mockBackend(page, ["AP_CLERK"]);
     await page.goto("/documents/s1");
